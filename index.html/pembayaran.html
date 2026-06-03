@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran</title>
+</head>
+<body style="font-family:Arial,sans-serif;background:#f5f5f5;max-width:430px;margin:auto;padding-bottom:30px;">
+
+<div style="background:#ff5722;color:white;padding:15px;text-align:center;">
+    <h2 style="margin:0;">💳 Pembayaran</h2>
+</div>
+
+<div style="padding:10px;">
+    <a href="keranjang.html">
+        <button style="background:#607d8b;color:white;border:none;padding:10px 15px;border-radius:8px;cursor:pointer;">← Kembali</button>
+    </a>
+</div>
+
+<div style="padding:15px;">
+    <div style="background:white;padding:15px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin-bottom:15px;">
+        <h3 style="margin-top:0;color:#ff5722;">📋 Ringkasan Pesanan</h3>
+        <hr>
+        <div style="display:flex;justify-content:space-between;">
+            <span id="detail-produk">🍛 Loading...</span>
+            <span id="detail-subtotal">Rp 0</span>
+        </div>
+        <br>
+        <div style="display:flex;justify-content:space-between;">
+            <span>🚚 Ongkir</span>
+            <span>Rp 11.000</span>
+        </div>
+        <hr>
+        <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:bold;color:#ff5722;">
+            <span>Total</span>
+            <span id="detail-total">Rp 0</span>
+        </div>
+    </div>
+
+    <div style="background:white;padding:15px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+        <h3 style="margin-top:0;color:#ff5722;">💰 Metode Pembayaran</h3>
+        <label style="font-weight:bold;">Pilih Metode Pembayaran</label>
+        <select id="metodePembayaran" onchange="cekMetode()" style="width:100%;padding:12px;margin-top:8px;border:1px solid #ddd;border-radius:8px;">
+            <option value="COD">🚚 COD (Bayar di Tempat)</option>
+            <option value="QRIS">📱 QRIS</option>
+        </select>
+        <br><br>
+
+        <div id="qrisBox" style="display:none;text-align:center;background:#fafafa;padding:15px;border-radius:10px;border:1px dashed #ddd;">
+            <h3>📱 Scan QRIS</h3>
+            <img src="qris.png" alt="QRIS" style="width:200px;border:1px solid #ddd;padding:5px;border-radius:8px;margin-bottom:10px;">
+            <p style="font-size:13px;color:#666;">Silakan transfer sesuai total tagihan di atas.</p>
+            
+            <div style="text-align:left;margin-top:15px;">
+                <label style="font-weight:bold;display:block;margin-bottom:5px;">📸 Upload Bukti Bayar:</label>
+                <input type="file" id="buktiBayar" accept="image/*" style="width:100%;">
+            </div>
+        </div>
+
+        <br>
+        <button onclick="prosesPesanan()" style="width:100%;padding:14px;background:#ff5722;color:white;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;">
+            🚀 Selesaikan Pesanan
+        </button>
+    </div>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    let namaProduk = params.get("nama") || "Nasi Goreng";
+    let qty = params.get("qty") || "1";
+    let subtotal = parseInt(params.get("subtotal")) || 15000;
+    let ongkir = 11000;
+    let total = subtotal + ongkir;
+
+    document.getElementById("detail-produk").innerText = `🍛 ${namaProduk} x ${qty}`;
+    document.getElementById("detail-subtotal").innerText = "Rp " + subtotal.toLocaleString("id-ID");
+    document.getElementById("detail-total").innerText = "Rp " + total.toLocaleString("id-ID");
+
+    function cekMetode() {
+        let metode = document.getElementById("metodePembayaran").value;
+        document.getElementById("qrisBox").style.display = (metode === "QRIS") ? "block" : "none";
+    }
+
+    function prosesPesanan() {
+        let metode = document.getElementById("metodePembayaran").value;
+        let fileInput = document.getElementById("buktiBayar");
+
+        let dataPesanan = {
+            produk: `${namaProduk} x ${qty}`,
+            totalHarga: "Rp " + total.toLocaleString("id-ID"),
+            metodeBayar: metode,
+            buktiGambar: null,
+            waktu: new Date().toLocaleString("id-ID")
+        };
+
+        if (metode === "QRIS") {
+            if (fileInput.files.length === 0) {
+                alert("Gagal! Anda wajib mengunggah bukti pembayaran jika memilih QRIS.");
+                return;
+            }
+            
+            // Membaca file gambar bukti transfer menjadi Base64 string
+            let file = fileInput.files[0];
+            let reader = new FileReader();
+            reader.onloadend = function() {
+                dataPesanan.buktiGambar = reader.result;
+                localStorage.setItem("pesananMasukAdmin", JSON.stringify(dataPesanan));
+                alert("Pembayaran QRIS Berhasil Dikirim!");
+                window.location.href = "konfirmasi.html";
+            }
+            reader.readAsDataURL(file);
+        } else {
+            localStorage.setItem("pesananMasukAdmin", JSON.stringify(dataPesanan));
+            alert("Pesanan COD Berhasil Dibuat!");
+            window.location.href = "konfirmasi.html";
+        }
+    }
+</script>
+</body>
+</html>
