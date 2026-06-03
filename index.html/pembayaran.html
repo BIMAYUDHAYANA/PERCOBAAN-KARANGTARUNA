@@ -18,7 +18,7 @@
 </div>
 
 <div style="padding:15px;">
-    <!-- Data Informasi Pembeli -->
+    <!-- Data Informasi Pembeli & Lokasi -->
     <div style="background:white;padding:15px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin-bottom:15px;">
         <h3 style="margin-top:0;color:#ff5722;">👤 Data Pengiriman</h3>
         <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 15px;">
@@ -28,31 +28,47 @@
             <input type="text" id="namaPembeli" placeholder="Masukkan nama Anda" style="width:93%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
         </div>
 
-        <div style="margin-bottom: 5px;">
+        <div style="margin-bottom: 12px;">
             <label style="font-weight:bold; display:block; margin-bottom:5px; font-size:14px; color:#555;">Nomor WhatsApp:</label>
             <input type="tel" id="nomorWaPembeli" placeholder="Contoh: 08123456789" style="width:93%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
         </div>
+
+        <!-- FITUR PILIHAN DESA LOKASI -->
+        <div style="margin-bottom: 5px;">
+            <label style="font-weight:bold; display:block; margin-bottom:5px; font-size:14px; color:#555;">Pilih Desa Pengiriman (Indramayu):</label>
+            <select id="lokasiDesa" onchange="hitungUlangOngkir()" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:white;">
+                <option value="Tambi" data-ongkir="8000">Desa Tambi (Dekat)</option>
+                <option value="Tambi Lor" data-ongkir="9000">Desa Tambi Lor</option>
+                <option value="Sliyeg" data-ongkir="12000">Desa Sliyeg</option>
+                <option value="Sliyeg Lor" data-ongkir="13000">Desa Sliyeg Lor</option>
+                <option value="Tugu" data-ongkir="14000">Desa Tugu</option>
+                <option value="Sudimampir" data-ongkir="15000">Desa Sudimampir</option>
+            </select>
+            <small style="color:#777; font-size:11px; margin-top:4px; display:block;">*Ongkir ditentukan berdasarkan jarak desa pengiriman.</small>
+        </div>
     </div>
 
+    <!-- Ringkasan Pesanan -->
     <div style="background:white;padding:15px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin-bottom:15px;">
         <h3 style="margin-top:0;color:#ff5722;">📋 Ringkasan Pesanan</h3>
-        <hr>
+        <hr style="border: 0; border-top: 1px solid #eee;">
         <div style="display:flex;justify-content:space-between;">
             <span id="detail-produk">🍛 Loading...</span>
             <span id="detail-subtotal">Rp 0</span>
         </div>
         <br>
         <div style="display:flex;justify-content:space-between;">
-            <span>🚚 Ongkir</span>
-            <span>Rp 11.000</span>
+            <span>🚚 Ongkir (<span id="nama-desa-aktif">Tambi</span>)</span>
+            <span id="detail-ongkir">Rp 0</span>
         </div>
-        <hr>
+        <hr style="border: 0; border-top: 1px solid #eee;">
         <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:bold;color:#ff5722;">
             <span>Total</span>
             <span id="detail-total">Rp 0</span>
         </div>
     </div>
 
+    <!-- Metode Pembayaran -->
     <div style="background:white;padding:15px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);">
         <h3 style="margin-top:0;color:#ff5722;">💰 Metode Pembayaran</h3>
         <label style="font-weight:bold;">Pilih Metode Pembayaran</label>
@@ -85,15 +101,30 @@
     let namaProduk = params.get("nama") || "Nasi Goreng";
     let qty = params.get("qty") || "1";
     let subtotal = parseInt(params.get("subtotal")) || 15000;
-    let ongkir = 11000;
+    
+    let ongkir = 8000; // Default awal desa Tambi
     let total = subtotal + ongkir;
 
-    // Membuat nomor invoice acak unik untuk mempermudah pelacakan status
     let nomorInvoiceOtomatis = "INV-" + Math.floor(10000 + Math.random() * 90000);
 
+    // Tampilkan data produk dan subtotal awal
     document.getElementById("detail-produk").innerText = `🍛 ${namaProduk} x ${qty}`;
     document.getElementById("detail-subtotal").innerText = "Rp " + subtotal.toLocaleString("id-ID");
-    document.getElementById("detail-total").innerText = "Rp " + total.toLocaleString("id-ID");
+
+    // Fungsi menghitung ulang ongkir berdasarkan drop-down Desa yang dipilih
+    function hitungUlangOngkir() {
+        let selectDesa = document.getElementById("lokasiDesa");
+        let desaTerpilih = selectDesa.value;
+        
+        // Mengambil biaya ongkir dari atribut data-ongkir pada option HTML
+        ongkir = parseInt(selectDesa.options[selectDesa.selectedIndex].getAttribute("data-ongkir"));
+        total = subtotal + ongkir;
+
+        // Perbarui tampilan teks di layar
+        document.getElementById("nama-desa-aktif").innerText = desaTerpilih;
+        document.getElementById("detail-ongkir").innerText = "Rp " + ongkir.toLocaleString("id-ID");
+        document.getElementById("detail-total").innerText = "Rp " + total.toLocaleString("id-ID");
+    }
 
     function cekMetode() {
         let metode = document.getElementById("metodePembayaran").value;
@@ -103,12 +134,10 @@
     function prosesPesanan() {
         let metode = document.getElementById("metodePembayaran").value;
         let fileInput = document.getElementById("buktiBayar");
-        
-        // Mengambil value input nama dan nomor wa pembeli
         let nama = document.getElementById("namaPembeli").value.trim();
         let wa = document.getElementById("nomorWaPembeli").value.trim();
+        let desa = document.getElementById("lokasiDesa").value;
 
-        // Validasi wajib isi identitas pelanggan
         if (nama === "" || wa === "") {
             alert("Gagal! Nama Pembeli dan Nomor WhatsApp wajib diisi.");
             return;
@@ -118,11 +147,12 @@
             invoice: nomorInvoiceOtomatis,
             pembeli: nama,
             whatsapp: wa,
+            lokasiDesa: desa + ", Indramayu", // Menyimpan info desa pengiriman
             produk: `${namaProduk} x ${qty}`,
             totalHarga: "Rp " + total.toLocaleString("id-ID"),
             metodeBayar: metode,
             buktiGambar: null,
-            status: "PENDING", // Inisialisasi status awal
+            status: "PENDING",
             waktu: new Date().toLocaleString("id-ID")
         };
 
@@ -147,6 +177,9 @@
             window.location.href = "konfirmasi.html";
         }
     }
+
+    // Jalankan kalkulasi pertama kali halaman dibuka
+    hitungUlangOngkir();
 </script>
 </body>
 </html>
