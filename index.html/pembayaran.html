@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pembayaran</title>
+</head>
+
+<body style="font-family:Arial,sans-serif;background:#f5f5f5;max-width:430px;margin:auto;">
+
+<!-- Header -->
+
+<div style="background:#ff5722;color:white;padding:15px;text-align:center;">
+    <h2 style="margin:0;">💳 Pembayaran</h2>
+</div>
+
+<!-- Tombol Kembali -->
+
+<div style="padding:10px;">
+    <a href="alamat.html">
+        <button type="button"
+            style="background:#607d8b;color:white;border:none;padding:10px 15px;border-radius:8px;">
+            ← Kembali
+        </button>
+    </a>
+</div>
+
+<div style="padding:15px;">
+
+
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pembayaran</title>
+</head>
+
+<body style="font-family:Arial,sans-serif;background:#f5f5f5;max-width:430px;margin:auto;">
+
+<!-- Header -->
+
+<div style="background:#ff5722;color:white;padding:15px;text-align:center;">
+    <h2 style="margin:0;">💳 Pembayaran</h2>
+</div>
+
+<!-- Tombol Kembali -->
+
+<div style="padding:10px;">
+    <a href="alamat.html">
+        <button type="button"
+            style="background:#607d8b;color:white;border:none;padding:10px 15px;border-radius:8px;">
+            ← Kembali
+        </button>
+    </a>
+</div>
+
+<div style="padding:15px;">
+
+```
+<!-- Ringkasan Pesanan -->
+<div style="background:white;padding:15px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin-bottom:15px;">
+
+    <h3 style="margin-top:0;color:#ff5722;">
+        📋 Ringkasan Pesanan
+    </h3>
+
+    <hr>
+
+    <div style="display:flex;justify-content:space-between;">
+        <span>🍛 Nasi Goreng x 2</span>
+        <span>Rp 30.000</span>
+    </div>
+
+    <br>
+
+    <div style="display:flex;justify-content:space-between;">
+        <span>🚚 Ongkir</span>
+        <span>Rp 11.000</span>
+    </div>
+
+    <hr>
+
+    <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:bold;color:#ff5722;">
+        <span>Total</span>
+        <span>Rp 41.000</span>
+    </div>
+
+</div>
+
+<!-- Metode Pembayaran -->
+<div style="background:white;padding:15px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+
+    <h3 style="margin-top:0;color:#ff5722;">
+        💰 Metode Pembayaran
+    </h3>
+
+    <label for="metodePembayaran">
+        Pilih Metode Pembayaran
+    </label>
+
+    <select id="metodePembayaran"
+            onchange="cekMetode()"
+            style="width:100%;padding:12px;margin-top:8px;border:1px solid #ddd;border-radius:8px;">
+
+        <option value="COD">🚚 COD (Bayar di Tempat)</option>
+        <option value="QRIS">📱 QRIS</option>
+
+    </select>
+
+    <br><br>
+
+    <div style="background:#fff3e0;padding:12px;border-radius:8px;">
+        <b>Informasi:</b><br>
+        Pastikan metode pembayaran yang dipilih sudah benar sebelum melakukan pemesanan.
+    </div>
+
+    <!-- QRIS -->
+    <div id="qrisBox"
+         style="display:none;margin-top:15px;text-align:center;">
+
+        <h3>📱 Scan QRIS</h3>
+
+        <img src="qris.png"
+             alt="QRIS"
+             style="width:250px;border:1px solid #ddd;padding:10px;border-radius:10px;">
+
+        <p>
+            Silakan scan QRIS di atas menggunakan aplikasi pembayaran.
+        </p>
+
+        <a href="konfirmasi.html">
+            <button type="button"
+                style="width:100%;padding:14px;background:green;color:white;border:none;border-radius:10px;">
+                ✔ Saya Sudah Bayar
+            </button>
+        </a>
+
+    </div>
+
+    <!-- COD -->
+    <div id="codBox">
+
+        <br>
+
+        <a href="konfirmasi.html">
+            <button type="button"
+                style="width:100%;padding:14px;background:#ff5722;color:white;border:none;border-radius:10px;font-size:16px;font-weight:bold;">
+                ✅ Pesan Sekarang
+            </button>
+        </a>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<script>
+
+function cekMetode(){
+
+    let metode =
+    document.getElementById("metodePembayaran").value;
+
+    if(metode === "QRIS"){
+
+        document.getElementById("qrisBox").style.display =
+        "block";
+
+        document.getElementById("codBox").style.display =
+        "none";
+
+    }else{
+
+        document.getElementById("qrisBox").style.display =
+        "none";
+
+        document.getElementById("codBox").style.display =
+        "block";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
