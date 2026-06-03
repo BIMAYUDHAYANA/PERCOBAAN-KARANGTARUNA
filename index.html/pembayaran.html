@@ -18,7 +18,13 @@
 </div>
 
 <div style="padding:15px;">
-    <!-- Data Informasi Pembeli & Lokasi -->
+    
+    <!-- STATUS GEOLOKASI OTOMATIS -->
+    <div id="statusLokasiBox" style="background:#e3f2fd; border:1px solid #90caf9; padding:15px; border-radius:15px; margin-bottom:15px; text-align:center; font-size:14px; color:#0d47a1;">
+        <span id="teksStatusLokasi">🌐 Sedang mendeteksi lokasi Anda secara otomatis...</span>
+    </div>
+
+    <!-- Data Informasi Pembeli -->
     <div style="background:white;padding:15px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin-bottom:15px;">
         <h3 style="margin-top:0;color:#ff5722;">👤 Data Pengiriman</h3>
         <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 15px;">
@@ -28,27 +34,12 @@
             <input type="text" id="namaPembeli" placeholder="Masukkan nama Anda" style="width:93%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
         </div>
 
-        <div style="margin-bottom: 12px;">
+        <div style="margin-bottom: 5px;">
             <label style="font-weight:bold; display:block; margin-bottom:5px; font-size:14px; color:#555;">Nomor WhatsApp:</label>
             <input type="tel" id="nomorWaPembeli" placeholder="Contoh: 08123456789" style="width:93%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
         </div>
-
-        <!-- FITUR PILIHAN DESA LOKASI -->
-        <div style="margin-bottom: 5px;">
-            <label style="font-weight:bold; display:block; margin-bottom:5px; font-size:14px; color:#555;">Pilih Desa Pengiriman (Indramayu):</label>
-            <select id="lokasiDesa" onchange="hitungUlangOngkir()" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:white;">
-                <option value="Tambi" data-ongkir="8000">Desa Tambi (Dekat)</option>
-                <option value="Tambi Lor" data-ongkir="9000">Desa Tambi Lor</option>
-                <option value="Sliyeg" data-ongkir="12000">Desa Sliyeg</option>
-                <option value="Sliyeg Lor" data-ongkir="13000">Desa Sliyeg Lor</option>
-                <option value="Tugu" data-ongkir="14000">Desa Tugu</option>
-                <option value="Sudimampir" data-ongkir="15000">Desa Sudimampir</option>
-            </select>
-            <small style="color:#777; font-size:11px; margin-top:4px; display:block;">*Ongkir ditentukan berdasarkan jarak desa pengiriman.</small>
-        </div>
     </div>
 
-    <!-- Ringkasan Pesanan -->
     <div style="background:white;padding:15px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin-bottom:15px;">
         <h3 style="margin-top:0;color:#ff5722;">📋 Ringkasan Pesanan</h3>
         <hr style="border: 0; border-top: 1px solid #eee;">
@@ -58,8 +49,8 @@
         </div>
         <br>
         <div style="display:flex;justify-content:space-between;">
-            <span>🚚 Ongkir (<span id="nama-desa-aktif">Tambi</span>)</span>
-            <span id="detail-ongkir">Rp 0</span>
+            <span>🚚 Ongkir Wilayah Tambi</span>
+            <span>Rp 8.000</span>
         </div>
         <hr style="border: 0; border-top: 1px solid #eee;">
         <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:bold;color:#ff5722;">
@@ -68,7 +59,6 @@
         </div>
     </div>
 
-    <!-- Metode Pembayaran -->
     <div style="background:white;padding:15px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);">
         <h3 style="margin-top:0;color:#ff5722;">💰 Metode Pembayaran</h3>
         <label style="font-weight:bold;">Pilih Metode Pembayaran</label>
@@ -90,40 +80,113 @@
         </div>
 
         <br>
-        <button onclick="prosesPesanan()" style="width:100%;padding:14px;background:#ff5722;color:white;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;">
-            🚀 Selesaikan Pesanan
+        <!-- Tombol dinonaktifkan (disabled) secara bawaan sebelum lokasi terdeteksi valid -->
+        <button id="btnSelesai" onclick="prosesPesanan()" disabled style="width:100%;padding:14px;background:#9e9e9e;color:white;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:not-allowed;">
+            🔒 Deteksi Lokasi Dahulu
         </button>
     </div>
 </div>
 
 <script>
+    // Koordinat Pusat Kantor Kepala Desa Tambi, Indramayu (Titik Acuan)
+    const TAMBI_LAT = -6.463282; 
+    const TAMBI_LON = 108.326284;
+    const MAKS_JARAK_KM = 4.0; // Batas wilayah radius Desa Tambi dan toleransi sekitarnya (4 KM)
+
+    let lokasiValid = false;
+    let jarakUserKeTambi = 0;
+
     const params = new URLSearchParams(window.location.search);
     let namaProduk = params.get("nama") || "Nasi Goreng";
     let qty = params.get("qty") || "1";
     let subtotal = parseInt(params.get("subtotal")) || 15000;
-    
-    let ongkir = 8000; // Default awal desa Tambi
+    let ongkir = 8000; 
     let total = subtotal + ongkir;
 
     let nomorInvoiceOtomatis = "INV-" + Math.floor(10000 + Math.random() * 90000);
 
-    // Tampilkan data produk dan subtotal awal
     document.getElementById("detail-produk").innerText = `🍛 ${namaProduk} x ${qty}`;
     document.getElementById("detail-subtotal").innerText = "Rp " + subtotal.toLocaleString("id-ID");
+    document.getElementById("detail-total").innerText = "Rp " + total.toLocaleString("id-ID");
 
-    // Fungsi menghitung ulang ongkir berdasarkan drop-down Desa yang dipilih
-    function hitungUlangOngkir() {
-        let selectDesa = document.getElementById("lokasiDesa");
-        let desaTerpilih = selectDesa.value;
-        
-        // Mengambil biaya ongkir dari atribut data-ongkir pada option HTML
-        ongkir = parseInt(selectDesa.options[selectDesa.selectedIndex].getAttribute("data-ongkir"));
-        total = subtotal + ongkir;
+    // 1. Fungsi Ambil GPS Otomatis Saat Halaman Diakses
+    function dapatkanLokasiOtomatis() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(posisiSukses, posisiGagal, {
+                enableHighAccuracy: true,
+                timeout: 10000
+            });
+        } else {
+            tampilkanStatusKunci("Browser Anda tidak mendukung deteksi lokasi otomatis.");
+        }
+    }
 
-        // Perbarui tampilan teks di layar
-        document.getElementById("nama-desa-aktif").innerText = desaTerpilih;
-        document.getElementById("detail-ongkir").innerText = "Rp " + ongkir.toLocaleString("id-ID");
-        document.getElementById("detail-total").innerText = "Rp " + total.toLocaleString("id-ID");
+    function posisiSukses(position) {
+        let userLat = position.coords.latitude;
+        let userLon = position.coords.longitude;
+
+        // Hitung jarak pengguna ke desa Tambi memakai rumus Haversine
+        jarakUserKeTambi = hitungJarakHaversine(userLat, userLon, TAMBI_LAT, TAMBI_LON);
+
+        let statusBox = document.getElementById("statusLokasiBox");
+        let statusTeks = document.getElementById("teksStatusLokasi");
+        let btn = document.getElementById("btnSelesai");
+
+        if (jarakUserKeTambi <= MAKS_JARAK_KM) {
+            // JIKA LOKASI VALID (Di dalam wilayah Tambi)
+            lokasiValid = true;
+            statusBox.style.background = "#e8f5e9";
+            statusBox.style.borderColor = "#a5d6a7";
+            statusBox.style.color = "#2e7d32";
+            statusTeks.innerHTML = `📍 Lokasi Terdeteksi (Berjarak ±${jarakUserKeTambi.toFixed(2)} km dari Tambi). Anda berada dalam jangkauan kirim.`;
+            
+            // Aktifkan kembali tombol pesanan
+            btn.disabled = false;
+            btn.style.background = "#ff5722";
+            btn.style.cursor = "pointer";
+            btn.innerHTML = "🚀 Selesaikan Pesanan";
+        } else {
+            // JIKA DI LUAR TAMBI
+            lokasiValid = false;
+            tampilkanStatusKunci(`❌ Maaf, lokasi Anda (±${jarakUserKeTambi.toFixed(1)} km) di luar area pengiriman Desa Tambi, Indramayu. Pemesanan tidak dapat dilanjutkan.`);
+        }
+    }
+
+    function posisiGagal(error) {
+        let pesan = "Gagal melacak lokasi otomatis. Mohon izinkan akses GPS di browser Anda.";
+        if(error.code == error.PERMISSION_DENIED) {
+            pesan = "⚠️ Akses GPS ditolak. Tolong izinkan izin lokasi pada pengaturan browser agar bisa memesan.";
+        }
+        tampilkanStatusKunci(pesan);
+    }
+
+    function tampilkanStatusKunci(pesan) {
+        let statusBox = document.getElementById("statusLokasiBox");
+        let statusTeks = document.getElementById("teksStatusLokasi");
+        let btn = document.getElementById("btnSelesai");
+
+        statusBox.style.background = "#ffebee";
+        statusBox.style.borderColor = "#ef9a9a";
+        statusBox.style.color = "#c62828";
+        statusTeks.innerHTML = pesan;
+
+        // Matikan Tombol secara permanen
+        btn.disabled = true;
+        btn.style.background = "#9e9e9e";
+        btn.style.cursor = "not-allowed";
+        btn.innerHTML = "🔒 Pesanan Terkunci Diluar Wilayah";
+    }
+
+    // 2. RUMUS MATEMATIKA HAVERSINE (Menghitung Jarak Garis Lengkung Bumi)
+    function hitungJarakHaversine(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius bumi dalam kilometer
+        let dLat = (lat2 - lat1) * Math.PI / 180;
+        let dLon = (lon2 - lon1) * Math.PI / 180;
+        let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+        let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c; // Hasil akhir berwujud Kilometer (Km)
     }
 
     function cekMetode() {
@@ -132,11 +195,15 @@
     }
 
     function prosesPesanan() {
+        if(!lokasiValid) {
+            alert("Sistem mengunci pesanan karena Anda berada di luar area Desa Tambi!");
+            return;
+        }
+
         let metode = document.getElementById("metodePembayaran").value;
         let fileInput = document.getElementById("buktiBayar");
         let nama = document.getElementById("namaPembeli").value.trim();
         let wa = document.getElementById("nomorWaPembeli").value.trim();
-        let desa = document.getElementById("lokasiDesa").value;
 
         if (nama === "" || wa === "") {
             alert("Gagal! Nama Pembeli dan Nomor WhatsApp wajib diisi.");
@@ -147,7 +214,7 @@
             invoice: nomorInvoiceOtomatis,
             pembeli: nama,
             whatsapp: wa,
-            lokasiDesa: desa + ", Indramayu", // Menyimpan info desa pengiriman
+            jarakKirim: jarakUserKeTambi.toFixed(2) + " Km dari pusat Tambi",
             produk: `${namaProduk} x ${qty}`,
             totalHarga: "Rp " + total.toLocaleString("id-ID"),
             metodeBayar: metode,
@@ -161,7 +228,6 @@
                 alert("Gagal! Anda wajib mengunggah bukti pembayaran jika memilih QRIS.");
                 return;
             }
-            
             let file = fileInput.files[0];
             let reader = new FileReader();
             reader.onloadend = function() {
@@ -178,8 +244,8 @@
         }
     }
 
-    // Jalankan kalkulasi pertama kali halaman dibuka
-    hitungUlangOngkir();
+    // Pemicu Geolokasi otomatis saat pembeli masuk halaman
+    window.onload = dapatkanLokasiOtomatis;
 </script>
 </body>
 </html>
