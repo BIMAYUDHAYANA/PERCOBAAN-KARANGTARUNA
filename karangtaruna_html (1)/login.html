@@ -1,0 +1,363 @@
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+session_start();
+
+$conn = mysqli_connect("localhost", "root", "", "karangtaruna");
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    $username = trim($_POST['username']);
+    $password = $_POST['password'];
+
+    $stmt = $conn->prepare("SELECT password, role FROM users WHERE username=?");
+    $stmt->bind_param("s",$username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if($row = $result->fetch_assoc()){
+
+        if(password_verify($password,$row['password'])){
+
+            $_SESSION['username']=$username;
+            $_SESSION['role']=$row['role'];
+
+            header("Location: ".($row['role']=="admin" ? "admin.html" : "dashboard.html"));
+            exit;
+
+        }else{
+            $error="Password yang Anda masukkan salah!";
+        }
+
+    }else{
+        $error="Username tidak ditemukan!";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login - Karang Taruna</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    overflow:hidden;
+
+}
+
+/* Background Blur */
+
+body::before{
+
+    content:'';
+    position:absolute;
+    width:450px;
+    height:450px;
+    background:#00d4ff;
+    top:-120px;
+    left:-120px;
+    border-radius:50%;
+    filter:blur(120px);
+    opacity:.25;
+
+}
+
+body::after{
+
+    content:'';
+    position:absolute;
+    width:400px;
+    height:400px;
+    background:#00ff99;
+    bottom:-150px;
+    right:-120px;
+    border-radius:50%;
+    filter:blur(120px);
+    opacity:.18;
+
+}
+
+.card{
+
+    position:relative;
+    width:420px;
+    padding:40px;
+    background:rgba(255,255,255,.08);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:20px;
+    box-shadow:0 20px 40px rgba(0,0,0,.4);
+    z-index:10;
+
+}
+
+.logo{
+
+    width:90px;
+    height:90px;
+    margin:auto;
+    border-radius:50%;
+    background:#45f3ff;
+    color:#0f2027;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:35px;
+    font-weight:bold;
+    margin-bottom:20px;
+    box-shadow:0 10px 25px rgba(69,243,255,.35);
+
+}
+
+h2{
+
+    text-align:center;
+    color:white;
+    margin-bottom:8px;
+
+}
+
+.subtitle{
+
+    color:#cfd8dc;
+    text-align:center;
+    margin-bottom:30px;
+    font-size:14px;
+
+}
+
+.alert{
+
+    background:#ff4d4d;
+    color:white;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:20px;
+    text-align:center;
+
+}
+
+.input-group{
+
+    position:relative;
+    margin-bottom:20px;
+
+}
+
+.input-group i{
+
+    position:absolute;
+    left:15px;
+    top:16px;
+    color:#45f3ff;
+
+}
+
+.input-group input{
+
+    width:100%;
+    padding:14px 45px;
+    border:none;
+    outline:none;
+    border-radius:12px;
+    background:rgba(255,255,255,.1);
+    color:white;
+    font-size:15px;
+    border:1px solid rgba(255,255,255,.15);
+
+}
+
+.input-group input::placeholder{
+
+    color:#cfd8dc;
+
+}
+
+.toggle{
+
+    position:absolute;
+    right:15px;
+    top:16px;
+    cursor:pointer;
+    color:#45f3ff;
+
+}
+
+button{
+
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:#45f3ff;
+    color:#0f2027;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+
+}
+
+button:hover{
+
+    transform:translateY(-3px);
+    box-shadow:0 10px 20px rgba(69,243,255,.35);
+
+}
+
+.footer{
+
+    text-align:center;
+    margin-top:20px;
+    color:#ddd;
+
+}
+
+.footer a{
+
+    color:#45f3ff;
+    text-decoration:none;
+    font-weight:600;
+
+}
+
+.footer a:hover{
+
+    text-decoration:underline;
+
+}
+
+@media(max-width:500px){
+
+.card{
+
+width:90%;
+padding:30px;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="logo">
+KT
+</div>
+
+<h2>Selamat Datang</h2>
+
+<p class="subtitle">
+Silakan login untuk melanjutkan
+</p>
+
+<?php
+if(isset($error)){
+echo "<div class='alert'>$error</div>";
+}
+?>
+
+<form method="POST">
+
+<div class="input-group">
+
+<i class="fa-solid fa-user"></i>
+
+<input
+type="text"
+name="username"
+placeholder="Masukkan Username"
+required>
+
+</div>
+
+<div class="input-group">
+
+<i class="fa-solid fa-lock"></i>
+
+<input
+type="password"
+name="password"
+id="password"
+placeholder="Masukkan Password"
+required>
+
+<i class="fa-solid fa-eye toggle" id="togglePassword"></i>
+
+</div>
+
+<button type="submit">
+<i class="fa-solid fa-right-to-bracket"></i>
+&nbsp; Login
+</button>
+
+</form>
+
+<div class="footer">
+
+Belum mempunyai akun?
+
+<br><br>
+
+<a href="register.html">
+Daftar Sekarang
+</a>
+
+</div>
+
+</div>
+
+<script>
+
+const toggle=document.getElementById("togglePassword");
+const password=document.getElementById("password");
+
+toggle.onclick=function(){
+
+if(password.type==="password"){
+
+password.type="text";
+toggle.classList.remove("fa-eye");
+toggle.classList.add("fa-eye-slash");
+
+}else{
+
+password.type="password";
+toggle.classList.remove("fa-eye-slash");
+toggle.classList.add("fa-eye");
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

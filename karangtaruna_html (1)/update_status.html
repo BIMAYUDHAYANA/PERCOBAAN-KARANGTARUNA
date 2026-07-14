@@ -1,0 +1,17 @@
+<?php
+$conn = mysqli_connect("localhost","root","","karangtaruna");
+
+if(isset($_POST['id']) && isset($_POST['status'])){
+
+    $id = (int)$_POST['id'];
+    $status = mysqli_real_escape_string($conn,$_POST['status']);
+
+    mysqli_query($conn,"
+        UPDATE pengiriman_barang
+        SET status='$status'
+        WHERE id='$id'
+    ");
+}
+
+header("Location: admin.html?page=barang");
+exit;
