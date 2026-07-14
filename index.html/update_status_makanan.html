@@ -1,0 +1,36 @@
+<?php
+session_start();
+
+// Validasi admin
+if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
+    header("Location: login.html");
+    exit();
+}
+
+$conn = mysqli_connect("localhost", "root", "", "karangtaruna");
+
+if (!$conn) {
+    die("Koneksi database gagal : " . mysqli_connect_error());
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+    $id     = intval($_POST['id'] ?? 0);
+    $status = $_POST['status'] ?? '';
+
+    // Daftar status yang diperbolehkan (mencegah input sembarangan)
+    $statusValid = ['Menunggu Konfirmasi', 'Diproses', 'Diantar', 'Selesai'];
+
+    if ($id > 0 && in_array($status, $statusValid, true)) {
+
+        $stmt = mysqli_prepare($conn, "UPDATE pesanan SET status = ? WHERE id = ?");
+        mysqli_stmt_bind_param($stmt, "si", $status, $id);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+}
+
+mysqli_close($conn);
+
+header("Location: admin.html?page=makanan");
+exit();

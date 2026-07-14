@@ -1,0 +1,66 @@
+<?php
+session_start();
+$conn = mysqli_connect("localhost", "root", "", "karangtaruna");
+
+if (!$conn) die("Koneksi gagal : " . mysqli_connect_error());
+
+// Proses upload bukti
+$nama_file = '';
+if(isset($_FILES['bukti_bayar']) && $_FILES['bukti_bayar']['error'] === 0){
+    $folder = "uploads/";
+    if(!file_exists($folder)) mkdir($folder, 0777, true);
+    $nama_file = time() . "_" . basename($_FILES['bukti_bayar']['name']);
+    move_uploaded_file($_FILES['bukti_bayar']['tmp_name'], $folder . $nama_file);
+}
+
+// Ambil data form
+$resi = "RESI" . date("YmdHis") . rand(100, 999);
+$pengirim = mysqli_real_escape_string($conn, $_POST['pengirim']);
+$hppengirim = mysqli_real_escape_string($conn, $_POST['hppengirim']);
+$alamat_pengirim = mysqli_real_escape_string($conn, $_POST['alamat_pengirim']);
+$penerima = mysqli_real_escape_string($conn, $_POST['penerima']);
+$hppenerima = mysqli_real_escape_string($conn, $_POST['hppenerima']);
+$alamat_penerima = mysqli_real_escape_string($conn, $_POST['alamat_penerima']);
+$barang = mysqli_real_escape_string($conn, $_POST['barang']);
+$berat = (float)$_POST['berat'];
+$biaya = $berat * 15000;
+$kurir = $_POST['kurir'];
+$layanan = $_POST['layanan'];
+$catatan = mysqli_real_escape_string($conn, $_POST['catatan']);
+$status = "Menunggu Pengiriman";
+
+$sql = "INSERT INTO pengiriman_barang (resi, pengirim, hppengirim, alamat_pengirim, penerima, hppenerima, alamat_penerima, barang, berat, biaya, kurir, layanan, catatan, status, bukti_bayar) 
+        VALUES ('$resi', '$pengirim', '$hppengirim', '$alamat_pengirim', '$penerima', '$hppenerima', '$alamat_penerima', '$barang', '$berat', '$biaya', '$kurir', '$layanan', '$catatan', '$status', '$nama_file')";
+
+$sukses = mysqli_query($conn, $sql);
+
+if($sukses){
+    $wa_admin = "6283148583173";
+    $pesan_wa = "Halo Admin, ada pengiriman barang baru!\nResi: $resi\nPengirim: $pengirim\nPenerima: $penerima\nBarang: $barang\nBiaya: Rp " . number_format($biaya,0,',','.');
+    $link_wa = "https://wa.me/" . $wa_admin . "?text=" . rawurlencode($pesan_wa);
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Pengiriman Berhasil</title>
+    <style>
+        body{font-family:Arial,sans-serif;background:#f4f7f6;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
+        .card{background:white;padding:40px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.1);text-align:center;max-width:450px;}
+        .success{font-size:70px;margin-bottom:15px;}
+        .btn-wa{display:inline-block;padding:16px 32px;background:#25D366;color:white;text-decoration:none;border-radius:12px;font-size:18px;font-weight:bold;margin:20px 0;}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="success">✅</div>
+        <h2>Pengiriman Dibuat!</h2>
+        <p>Resi: <strong><?php echo $resi; ?></strong></p>
+        <p>Total Biaya: <strong>Rp <?php echo number_format($biaya,0,',','.'); ?></strong></p>
+        <a href="<?php echo $link_wa; ?>" target="_blank" class="btn-wa">📲 Kirim Notifikasi ke Admin via WhatsApp</a>
+        <br><br>
+        <a href="dashboard.html?page=barang">Kembali ke Dashboard</a>
+    </div>
+</body>
+</html>
+<?php } else { echo "Gagal: " . mysqli_error($conn); } ?>
