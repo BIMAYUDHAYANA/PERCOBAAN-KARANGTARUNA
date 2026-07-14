@@ -1,0 +1,747 @@
+<?php
+session_start();
+
+// Cek login
+if (!isset($_SESSION['username']) || $_SESSION['role'] == 'admin') {
+    header("Location: login.php");
+    exit();
+}
+
+$huruf = strtoupper(substr($_SESSION['username'], 0, 1));
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard Customer | Karang Taruna</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+
+    background:#f3f5f9;
+
+}
+
+.container{
+
+    display:flex;
+    min-height:100vh;
+
+}
+
+/* ==========================
+   SIDEBAR
+========================== */
+
+.sidebar{
+
+    width:270px;
+    background:linear-gradient(180deg,#b71c1c,#d32f2f);
+    color:white;
+    padding:25px;
+    display:flex;
+    flex-direction:column;
+    box-shadow:5px 0 20px rgba(0,0,0,.12);
+
+}
+
+.profile{
+
+    text-align:center;
+    padding-bottom:25px;
+    border-bottom:1px solid rgba(255,255,255,.25);
+
+}
+
+.avatar{
+
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background:white;
+    color:#d32f2f;
+    margin:auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:38px;
+    font-weight:bold;
+    margin-bottom:15px;
+
+}
+
+.profile h3{
+
+    font-size:20px;
+    margin-bottom:5px;
+
+}
+
+.profile p{
+
+    opacity:.85;
+
+}
+
+.menu{
+
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-top:30px;
+
+}
+
+.menu a{
+
+    text-decoration:none;
+    color:white;
+    padding:15px;
+    border-radius:12px;
+    transition:.3s;
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+}
+
+.menu a:hover{
+
+    background:white;
+    color:#d32f2f;
+    transform:translateX(5px);
+
+}
+
+.logout{
+
+    margin-top:auto;
+    text-decoration:none;
+    color:white;
+    text-align:center;
+    padding:14px;
+    border-radius:12px;
+    background:#8e0000;
+    transition:.3s;
+
+}
+
+.logout:hover{
+
+    background:white;
+    color:#d32f2f;
+
+}
+
+/* ==========================
+   CONTENT
+========================== */
+
+.content{
+
+    flex:1;
+    padding:25px;
+
+}
+
+.topbar{
+
+    background:white;
+    height:70px;
+    border-radius:18px;
+    padding:0 30px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+    margin-bottom:25px;
+
+}
+
+.topbar h2{
+
+    color:#d32f2f;
+    font-size:24px;
+
+}
+
+.topbar .user{
+
+    font-weight:600;
+    color:#555;
+
+}
+
+.card{
+
+    background:white;
+    border-radius:18px;
+    padding:30px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    min-height:82vh;
+
+}
+
+/* ==========================
+   HOME
+========================== */
+
+.home{
+
+    text-align:center;
+    padding-top:50px;
+
+}
+
+.home h1{
+
+    color:#d32f2f;
+    margin-bottom:10px;
+
+}
+
+.home p{
+
+    color:#666;
+    margin-bottom:35px;
+
+}
+
+.cards{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:20px;
+
+}
+
+.info{
+
+    background:white;
+    border-radius:15px;
+    padding:25px;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+    transition:.35s;
+    border-top:5px solid #d32f2f;
+
+}
+
+.info:hover{
+
+    transform:translateY(-8px);
+
+}
+
+.info i{
+
+    font-size:40px;
+    color:#d32f2f;
+    margin-bottom:15px;
+
+}
+
+.info h3{
+
+    margin-bottom:10px;
+
+}
+
+.info p{
+
+    color:#666;
+    font-size:14px;
+
+}
+
+/* ==========================
+   FORM
+========================== */
+
+.form-group{
+
+    margin-bottom:20px;
+
+}
+
+.form-group label{
+
+    display:block;
+    margin-bottom:8px;
+    font-weight:600;
+
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select{
+
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    outline:none;
+    transition:.3s;
+
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus{
+
+    border-color:#d32f2f;
+    box-shadow:0 0 5px rgba(211,47,47,.2);
+
+}
+
+.btn-kirim{
+
+    background:#d32f2f;
+    color:white;
+    border:none;
+    padding:13px 28px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.3s;
+
+}
+
+.btn-kirim:hover{
+
+    background:#b71c1c;
+    transform:translateY(-2px);
+
+}
+
+/* ==========================
+   KARTU TOKO
+========================== */
+
+.toko-list{
+
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    margin:25px 0;
+
+}
+
+.toko{
+
+    width:220px;
+    padding:20px;
+    background:white;
+    border-radius:15px;
+    border:2px solid #ddd;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+    cursor:pointer;
+    transition:.35s;
+
+}
+
+.toko:hover{
+
+    transform:translateY(-6px);
+    border-color:#d32f2f;
+
+}
+
+.toko.active{
+
+    background:#d32f2f;
+    color:white;
+
+}
+
+/* ==========================
+   MENU BOX
+========================== */
+
+.menu-box{
+
+    display:none;
+
+}
+
+.menu-box.active{
+
+    display:block;
+    animation:fade .4s;
+
+}
+
+@keyframes fade{
+
+from{
+opacity:0;
+transform:translateY(15px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+
+}
+
+.item{
+
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:18px;
+    margin-bottom:15px;
+    transition:.3s;
+
+}
+
+.item:hover{
+
+    box-shadow:0 10px 20px rgba(0,0,0,.08);
+
+}
+
+.item button{
+
+    margin-top:12px;
+    background:#d32f2f;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+
+}
+
+.item button:hover{
+
+    background:#b71c1c;
+
+}
+
+@media(max-width:900px){
+
+.container{
+
+flex-direction:column;
+
+}
+
+.sidebar{
+
+width:100%;
+
+}
+
+.cards{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+    <!-- =========================
+     SIDEBAR
+========================= -->
+
+<div class="sidebar">
+
+    <div class="profile">
+
+        <div class="avatar">
+            <?php echo $huruf; ?>
+        </div>
+
+        <h3>
+            <?php echo htmlspecialchars($_SESSION['username']); ?>
+        </h3>
+
+        <p>
+            <?php echo ucfirst($_SESSION['role']); ?>
+        </p>
+
+    </div>
+
+    <?php
+        $page = $_GET['page'] ?? '';
+    ?>
+
+    <div class="menu">
+
+        <a href="dashboard.php"
+        class="<?php echo ($page=='' ? 'active' : ''); ?>">
+            <i class="fa-solid fa-house"></i>
+            Dashboard
+        </a>
+
+        <a href="?page=makanan"
+        class="<?php echo ($page=='makanan' ? 'active' : ''); ?>">
+            <i class="fa-solid fa-utensils"></i>
+            Pesan Makanan
+        </a>
+
+        <a href="?page=barang"
+        class="<?php echo ($page=='barang' ? 'active' : ''); ?>">
+            <i class="fa-solid fa-box"></i>
+            Pengiriman Barang
+        </a>
+
+        <a href="?page=pariwisata"
+        class="<?php echo ($page=='pariwisata' ? 'active' : ''); ?>">
+            <i class="fa-solid fa-mountain-sun"></i>
+            Pariwisata
+        </a>
+
+        <a href="history.php">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            Riwayat Pesanan
+        </a>
+
+    </div>
+
+    <a href="logout.php" class="logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        Logout
+    </a>
+
+</div>
+
+<!-- =========================
+     CONTENT
+========================= -->
+
+<div class="content">
+
+    <div class="topbar">
+
+        <div>
+
+            <h2>Dashboard Customer</h2>
+
+            <small style="color:#777;">
+                Selamat datang di Sistem Informasi Pesanan Karang Taruna
+            </small>
+
+        </div>
+
+        <div class="user">
+
+            <i class="fa-solid fa-user-circle"></i>
+
+            <?php echo htmlspecialchars($_SESSION['username']); ?>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+<?php
+
+if($page=="makanan"){
+
+    include "fitur_makanan.php";
+
+}
+
+elseif($page=="barang"){
+
+    include "barang.php";
+
+}
+
+elseif($page=="pariwisata"){
+
+    include "pariwisata.php";
+
+}
+
+else{
+
+?>
+
+<div class="home">
+
+<h1>Selamat Datang 👋</h1>
+
+<p>
+
+Silakan pilih layanan yang tersedia pada menu di sebelah kiri.
+
+</p>
+
+<div class="cards">
+
+<div class="info">
+
+<i class="fa-solid fa-utensils"></i>
+
+<h3>Pesan Makanan</h3>
+
+<p>
+
+Pesan makanan dari UMKM Karang Taruna dengan mudah dan cepat.
+
+</p>
+
+</div>
+
+<div class="info">
+
+<i class="fa-solid fa-box"></i>
+
+<h3>Pengiriman Barang</h3>
+
+<p>
+
+Kirim barang dengan layanan yang aman dan terpercaya.
+
+</p>
+
+</div>
+
+<div class="info">
+
+<i class="fa-solid fa-mountain-sun"></i>
+
+<h3>Pariwisata</h3>
+
+<p>
+
+Temukan berbagai destinasi wisata unggulan desa.
+
+</p>
+
+</div>
+
+<div class="info">
+
+<i class="fa-solid fa-clock-rotate-left"></i>
+
+<h3>Riwayat Pesanan</h3>
+
+<p>
+
+Lihat semua transaksi yang pernah Anda lakukan.
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<?php
+
+}
+
+?>
+
+    </div>
+
+</div>
+<!-- ==========================
+     JAVASCRIPT
+========================== -->
+
+<script>
+
+// ================================
+// Pilih toko (untuk fitur makanan)
+// ================================
+function showMenu(id, element){
+
+    document.querySelectorAll(".menu-box").forEach(function(menu){
+        menu.classList.remove("active");
+    });
+
+    document.querySelectorAll(".toko").forEach(function(item){
+        item.classList.remove("active");
+    });
+
+    const target = document.getElementById(id);
+
+    if(target){
+        target.classList.add("active");
+    }
+
+    if(element){
+        element.classList.add("active");
+    }
+}
+
+
+// ======================================
+// Efek hover pada card layanan Dashboard
+// ======================================
+document.querySelectorAll(".info").forEach(function(card){
+
+    card.addEventListener("mouseenter",function(){
+
+        this.style.transform="translateY(-8px)";
+        this.style.boxShadow="0 18px 35px rgba(0,0,0,.12)";
+
+    });
+
+    card.addEventListener("mouseleave",function(){
+
+        this.style.transform="translateY(0)";
+        this.style.boxShadow="0 8px 18px rgba(0,0,0,.08)";
+
+    });
+
+});
+
+
+// ======================================
+// Animasi saat halaman dimuat
+// ======================================
+window.addEventListener("load",function(){
+
+    document.querySelectorAll(".card,.topbar,.sidebar").forEach(function(el){
+
+        el.animate([
+            {
+                opacity:0,
+                transform:"translateY(15px)"
+            },
+            {
+                opacity:1,
+                transform:"translateY(0)"
+            }
+        ],{
+            duration:500,
+            easing:"ease-out",
+            fill:"forwards"
+        });
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>

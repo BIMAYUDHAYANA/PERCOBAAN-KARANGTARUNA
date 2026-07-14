@@ -1,0 +1,341 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['username'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$conn = mysqli_connect("localhost", "root", "", "karangtaruna");
+
+if (!$conn) {
+    die("Koneksi database gagal : " . mysqli_connect_error());
+}
+
+$username = mysqli_real_escape_string($conn, $_SESSION['username']);
+
+
+// =======================
+// Riwayat Makanan
+// =======================
+$makanan = mysqli_query($conn,"
+SELECT *
+FROM pesanan
+WHERE username='$username'
+ORDER BY tanggal DESC
+");
+
+// =======================
+// Riwayat Barang
+// =======================
+$barang = mysqli_query($conn,"
+SELECT *
+FROM pengiriman_barang
+WHERE pengirim='$username'
+ORDER BY tanggal DESC
+");
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Riwayat Transaksi</title>
+<meta http-equiv="refresh" content="3">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f5f5f5;
+}
+
+.container{
+
+    width:900px;
+
+    margin:40px auto;
+
+    background:white;
+
+    border-radius:15px;
+
+    padding:30px;
+
+    box-shadow:0 0 15px rgba(0,0,0,.08);
+
+}
+
+h1{
+
+color:#ff5722;
+
+margin-bottom:25px;
+
+}
+
+h2{
+
+margin-top:30px;
+
+margin-bottom:15px;
+
+color:#333;
+
+}
+
+.card{
+
+background:#fafafa;
+
+border:1px solid #ddd;
+
+border-radius:10px;
+
+padding:18px;
+
+margin-bottom:15px;
+
+}
+
+.card b{
+
+font-size:18px;
+
+}
+
+.status{
+
+display:inline-block;
+
+margin-top:10px;
+
+padding:6px 15px;
+
+border-radius:20px;
+
+font-size:13px;
+
+font-weight:bold;
+
+color:white;
+
+}
+
+.menunggu{
+
+background:#ff9800;
+
+}
+
+.ambil{
+
+background:#03A9F4;
+
+}
+
+.perjalanan{
+
+background:#3F51B5;
+
+}
+
+.selesai{
+
+background:#4CAF50;
+
+}
+
+.kembali{
+
+display:inline-block;
+
+margin-top:25px;
+
+padding:12px 25px;
+
+background:#ff5722;
+
+color:white;
+
+text-decoration:none;
+
+border-radius:10px;
+
+}
+
+.kosong{
+
+padding:15px;
+
+background:#eee;
+
+border-radius:10px;
+
+color:#666;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📜 Riwayat Transaksi</h1>
+
+<h2>🍔 Riwayat Pesanan Makanan</h2>
+
+<?php
+
+if(mysqli_num_rows($makanan)==0){
+
+echo "<div class='kosong'>Belum ada pesanan makanan.</div>";
+
+}else{
+
+while($r=mysqli_fetch_assoc($makanan)){
+
+?>
+
+<div class="card">
+
+<b><?= $r['nama_menu']; ?></b>
+
+<br><br>
+
+Metode Pembayaran :
+<b><?= $r['metode_pembayaran']; ?></b>
+
+<br>
+
+Tanggal :
+
+<?= $r['tanggal']; ?>
+
+</div>
+
+<?php
+
+}
+
+}
+
+?>
+
+<h2>📦 Riwayat Pengiriman Barang</h2>
+
+<?php
+
+if(mysqli_num_rows($barang)==0){
+
+echo "<div class='kosong'>Belum ada pengiriman barang.</div>";
+
+}else{
+
+while($r=mysqli_fetch_assoc($barang)){
+
+$class="menunggu";
+
+if($r['status']=="Ambil Barang"){
+
+$class="ambil";
+
+}
+
+elseif($r['status']=="Dalam Perjalanan"){
+
+$class="perjalanan";
+
+}
+
+elseif($r['status']=="Barang Sampai Tujuan"){
+
+$class="selesai";
+
+}
+
+?>
+
+<div class="card">
+
+<b>No Resi</b>
+
+<?= $r['resi']; ?>
+
+<br><br>
+
+<b>Barang</b>
+
+: <?= $r['barang']; ?>
+
+<br>
+
+<b>Penerima</b>
+
+: <?= $r['penerima']; ?>
+
+<br>
+
+<b>Kurir</b>
+
+: <?= $r['kurir']; ?>
+
+<br>
+
+<b>Layanan</b>
+
+: <?= $r['layanan']; ?>
+
+<br>
+
+<b>Berat</b>
+
+: <?= $r['berat']; ?> Kg
+
+<br>
+
+<b>Tanggal</b>
+
+: <?= $r['tanggal']; ?>
+
+<br>
+
+<span class="status <?= $class; ?>">
+
+<?= $r['status']; ?>
+
+</span>
+
+</div>
+
+<?php
+
+}
+
+}
+
+?>
+
+<a href="dashboard.php" class="kembali">
+
+← Kembali
+
+</a>
+
+</div>
+
+</body>
+
+</html>
