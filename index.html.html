@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIDESA Tambi — Sistem Informasi Desa Tambi</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --bg:#F5F1E6;
+  --paper:#FFFFFF;
+  --ink:#1D2620;
+  --ink-soft:#5B6B62;
+  --green-deep:#0E3B33;
+  --green-mid:#1F5C4D;
+  --green-pale:#E4EEE7;
+  --gold:#C6963C;
+  --gold-pale:#F4E7C8;
+  --brick:#A34433;
+  --brick-pale:#F5E1DB;
+  --line:#DFD8C2;
+  --radius:10px;
+  --shadow:0 2px 10px rgba(14,59,51,0.06), 0 1px 2px rgba(14,59,51,0.08);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{
+  font-family:'Fraunces',serif;
+  letter-spacing:-0.01em;
+}
+::selection{background:var(--gold-pale);}
+
+/* ---------- Header ---------- */
+.masthead{
+  background:var(--green-deep);
+  color:#EFEBDD;
+  position:relative;
+  overflow:hidden;
+}
+.terraces{
+  position:absolute; inset:0; opacity:0.5; pointer-events:none;
+  background:
+    repeating-linear-gradient(180deg,
+      transparent 0px, transparent 22px,
+      rgba(198,150,60,0.16) 22px, rgba(198,150,60,0.16) 24px);
+}
+.masthead-inner{
+  position:relative; z-index:1;
+  max-width:1180px; margin:0 auto; padding:22px 28px 26px;
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+}
+.emblem{width:58px;height:58px;flex-shrink:0;}
+.masthead-text .eyebrow{
+  font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--gold); font-weight:600; margin:0 0 3px;
+}
+.masthead-text h1{
+  font-size:26px; margin:0; font-weight:600; color:#FBF8EF;
+}
+.masthead-text .loc{
+  font-size:13.5px; color:#C9D6CD; margin-top:3px;
+}
+.masthead-text .loc button{
+  background:none;border:none;color:var(--gold);font-size:12.5px;
+  text-decoration:underline;cursor:pointer;padding:0;margin-left:8px;font-family:inherit;
+}
+
+/* ---------- Nav ---------- */
+nav.tabs{
+  background:var(--paper);
+  border-bottom:1px solid var(--line);
+  position:sticky; top:0; z-index:20;
+}
+.tabs-inner{
+  max-width:1180px;margin:0 auto;padding:0 20px;
+  display:flex; gap:4px; overflow-x:auto;
+}
+.tab-btn{
+  border:none;background:none;font-family:'Inter',sans-serif;
+  font-size:14.5px; font-weight:600; color:var(--ink-soft);
+  padding:14px 16px; cursor:pointer; white-space:nowrap;
+  border-bottom:3px solid transparent; margin-bottom:-1px;
+  transition:color .15s;
+}
+.tab-btn:hover{color:var(--green-deep);}
+.tab-btn.active{color:var(--green-deep); border-bottom-color:var(--gold);}
+
+main{max-width:1180px;margin:0 auto;padding:26px 20px 70px;}
+.view{display:none;}
+.view.active{display:block;}
+
+/* ---------- Cards / layout ---------- */
+.grid-stats{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:14px; margin-bottom:22px;
+}
+.stat-card{
+  background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+  padding:16px 18px; box-shadow:var(--shadow);
+}
+.stat-card .label{font-size:12px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.stat-card .value{font-family:'Fraunces',serif;font-size:28px;margin-top:6px;color:var(--green-deep);font-weight:600;}
+.stat-card .sub{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+
+.panel{
+  background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+  padding:20px; box-shadow:var(--shadow); margin-bottom:18px;
+}
+.panel h2{font-size:19px;margin:0 0 4px;color:var(--green-deep);}
+.panel .desc{font-size:13px;color:var(--ink-soft);margin:0 0 16px;}
+
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.toolbar input[type=text], .toolbar select{
+  border:1px solid var(--line); border-radius:7px; padding:9px 12px; font-size:13.5px;
+  font-family:inherit; background:#FCFAF3;
+}
+.toolbar input[type=text]{min-width:200px;flex:1;}
+.spacer{flex:1;}
+
+button.btn{
+  border:none;border-radius:7px;padding:9px 16px;font-size:13.5px;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:transform .05s, opacity .15s;
+  display:inline-flex;align-items:center;gap:6px;
+}
+button.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--green-deep);color:#F5F1E6;}
+.btn-primary:hover{background:var(--green-mid);}
+.btn-gold{background:var(--gold);color:#3A2C0B;}
+.btn-gold:hover{opacity:.88;}
+.btn-outline{background:transparent;border:1px solid var(--line);color:var(--ink);}
+.btn-outline:hover{border-color:var(--green-mid);color:var(--green-deep);}
+.btn-danger{background:var(--brick-pale);color:var(--brick);}
+.btn-danger:hover{background:#efc9bf;}
+.btn-sm{padding:6px 10px;font-size:12.5px;border-radius:6px;}
+
+/* ---------- Table ---------- */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:720px;}
+thead th{
+  background:var(--green-pale); color:var(--green-deep); text-align:left;
+  padding:10px 12px; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.04em;
+  white-space:nowrap; position:sticky; top:0;
+}
+tbody td{padding:10px 12px; border-top:1px solid var(--line); vertical-align:top;}
+tbody tr:hover{background:#FBF9F1;}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:700;}
+.tag-green{background:var(--green-pale);color:var(--green-deep);}
+.tag-gold{background:var(--gold-pale);color:#7A5A16;}
+.tag-brick{background:var(--brick-pale);color:var(--brick);}
+.empty-row{padding:34px 12px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+
+/* ---------- Modal ---------- */
+.modal-overlay{
+  display:none; position:fixed; inset:0; background:rgba(15,25,20,0.45);
+  z-index:100; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--paper); border-radius:12px; width:100%; max-width:560px;
+  padding:24px; box-shadow:0 20px 50px rgba(0,0,0,0.25);
+}
+.modal h3{margin:0 0 4px;font-size:19px;color:var(--green-deep);}
+.modal .sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:16px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-grid .full{grid-column:1/-1;}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em;}
+.field input, .field select, .field textarea{
+  width:100%;border:1px solid var(--line);border-radius:7px;padding:9px 10px;
+  font-family:inherit;font-size:13.5px;background:#FCFAF3;
+}
+.field textarea{resize:vertical;min-height:56px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+.dropzone{
+  border:2px dashed var(--line); border-radius:10px; padding:24px; text-align:center;
+  color:var(--ink-soft); font-size:13.5px; cursor:pointer; background:#FCFAF3;
+}
+.dropzone.drag{border-color:var(--gold); background:var(--gold-pale);}
+.dropzone strong{color:var(--green-deep);}
+
+/* ---------- Wilayah ---------- */
+.info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;gap:12px;}
+.info-row:last-child{border-bottom:none;}
+.info-row .k{color:var(--ink-soft);}
+.info-row .v{font-weight:600;text-align:right;}
+.dusun-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:13px;}
+.dusun-bar-row .name{width:110px;flex-shrink:0;color:var(--ink-soft);}
+.dusun-bar-track{flex:1;background:var(--green-pale);border-radius:6px;height:14px;overflow:hidden;}
+.dusun-bar-fill{background:var(--green-mid);height:100%;border-radius:6px;}
+.dusun-bar-row .count{width:30px;text-align:right;font-weight:700;color:var(--green-deep);}
+.note{
+  background:var(--gold-pale); border:1px solid #E7CE93; border-radius:8px; padding:12px 14px;
+  font-size:13px; color:#6B4E10; margin-top:10px;
+}
+.two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;}
+@media(max-width:820px){
+  .two-col{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+}
+.toast{
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+  background:var(--green-deep); color:#F5F1E6; padding:11px 20px; border-radius:8px;
+  font-size:13.5px; box-shadow:0 8px 24px rgba(0,0,0,.2); z-index:200; opacity:0; pointer-events:none;
+  transition:opacity .2s, transform .2s;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+.small-muted{font-size:12px;color:var(--ink-soft);}
+
+/* ---------- Admin gating ---------- */
+.admin-only{display:none !important;}
+body.is-admin .admin-only{display:inline-flex !important;}
+body.is-admin .modal-actions.admin-only{display:flex !important;}
+body.is-admin .field-block-inline.admin-only{display:block !important;}
+.admin-box{
+  position:relative; z-index:1; display:flex; align-items:center; gap:10px; margin-left:auto;
+}
+.admin-badge{
+  display:flex; align-items:center; gap:7px; background:rgba(198,150,60,0.16);
+  border:1px solid var(--gold); color:var(--gold-pale); padding:6px 12px; border-radius:20px; font-size:12.5px; font-weight:600;
+}
+.admin-badge .dot{width:7px;height:7px;border-radius:50%;background:#7CD98E;display:inline-block;}
+.btn-login{
+  background:transparent;border:1px solid rgba(244,231,200,0.4);color:#F4E7C8;
+  border-radius:20px;padding:7px 15px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;
+}
+.btn-login:hover{background:rgba(244,231,200,0.1);}
+.viewer-note{
+  background:var(--green-pale); border:1px solid #C9DED2; color:var(--green-deep);
+  border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:14px; display:flex; align-items:center; gap:8px;
+}
+body.is-admin .viewer-hide-note{display:none;}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="terraces"></div>
+  <div class="masthead-inner">
+    <svg class="emblem" viewBox="0 0 100 100">
+      <defs>
+        <path id="ringpath" d="M 50,50 m -38,0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0"/>
+      </defs>
+      <circle cx="50" cy="50" r="47" fill="#0E3B33" stroke="#C6963C" stroke-width="2"/>
+      <circle cx="50" cy="50" r="38" fill="none" stroke="#C6963C" stroke-width="1"/>
+      <text font-size="7.2" fill="#F4E7C8" font-family="Inter, sans-serif" font-weight="700" letter-spacing="1.5">
+        <textPath href="#ringpath" startOffset="2%">PEMERINTAH DESA TAMBI</textPath>
+      </text>
+      <path d="M50 34 C 44 44, 44 56, 50 68 C 56 56, 56 44, 50 34 Z" fill="#C6963C" opacity="0.9"/>
+      <path d="M50 40 C 46 47, 46 55, 50 62" stroke="#0E3B33" stroke-width="1" fill="none" opacity="0.5"/>
+      <circle cx="50" cy="50" r="2.6" fill="#0E3B33"/>
+    </svg>
+    <div class="masthead-text">
+      <p class="eyebrow">Sistem Informasi Desa</p>
+      <h1>Desa Tambi</h1>
+      <p class="loc">Kabupaten Indramayu &middot; Provinsi Jawa Barat
+        <button onclick="switchTab('wilayah')">lihat lokasi di peta &rarr;</button>
+      </p>
+    </div>
+    <div class="admin-box">
+      <span class="admin-badge" id="adminBadge" style="display:none;"><span class="dot"></span>Mode Admin</span>
+      <button class="btn-login" id="loginBtn" onclick="openAdminLogin()">Masuk sebagai Admin</button>
+      <button class="btn-login" id="logoutBtn" style="display:none;" onclick="logoutAdmin()">Keluar</button>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">Beranda</button>
+    <button class="tab-btn" data-tab="penduduk" onclick="switchTab('penduduk')">Data Penduduk</button>
+    <button class="tab-btn" data-tab="bansos" onclick="switchTab('bansos')">Data Bansos</button>
+    <button class="tab-btn" data-tab="wilayah" onclick="switchTab('wilayah')">Wilayah</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ================= DASHBOARD ================= -->
+  <section id="view-dashboard" class="view active">
+    <div class="grid-stats" id="statGrid"></div>
+    <div class="two-col">
+      <div class="panel">
+        <h2>Sebaran Penduduk per Dusun</h2>
+        <p class="desc">Dihitung otomatis dari data penduduk yang tersimpan.</p>
+        <div id="dusunBars"><p class="small-muted">Belum ada data penduduk.</p></div>
+      </div>
+      <div class="panel">
+        <h2>Ringkasan Bansos</h2>
+        <p class="desc">Status penyaluran bantuan sosial terbaru.</p>
+        <div id="bansosSummary"><p class="small-muted">Belum ada data bansos.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PENDUDUK ================= -->
+  <section id="view-penduduk" class="view">
+    <div class="panel">
+      <h2>Data Penduduk</h2>
+      <p class="desc">Kelola data penduduk Desa Tambi secara manual atau impor massal dari file CSV.</p>
+      <div class="toolbar">
+        <input type="text" id="searchPenduduk" placeholder="Cari nama / NIK / dusun..." oninput="renderPendudukTable()">
+        <select id="filterDusun" onchange="renderPendudukTable()"><option value="">Semua Dusun</option></select>
+        <div class="spacer"></div>
+        <button class="btn btn-outline admin-only" onclick="openImportModal()">Impor File</button>
+        <button class="btn btn-outline" onclick="exportPendudukCSV()">Ekspor CSV</button>
+        <button class="btn btn-primary admin-only" onclick="openPendudukModal()">+ Tambah Manual</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>NIK</th><th>Nama</th><th>L/P</th><th>Tgl Lahir</th><th>Dusun/RT/RW</th><th>Pekerjaan</th><th>No. HP</th><th>Aksi</th>
+          </tr></thead>
+          <tbody id="pendudukBody"></tbody>
+        </table>
+      </div>
+      <p class="small-muted" id="pendudukCount" style="margin-top:10px;"></p>
+    </div>
+  </section>
+
+  <!-- ================= BANSOS ================= -->
+  <section id="view-bansos" class="view">
+    <div class="panel">
+      <h2>Data Bantuan Sosial (Bansos)</h2>
+      <p class="desc">Catat penyaluran program bansos (PKH, BPNT, BLT Dana Desa, dll.) kepada penduduk terdaftar.</p>
+      <div class="toolbar">
+        <input type="text" id="searchBansos" placeholder="Cari nama penerima / program..." oninput="renderBansosTable()">
+        <select id="filterStatusBansos" onchange="renderBansosTable()">
+          <option value="">Semua Status</option>
+          <option value="Belum Disalurkan">Belum Disalurkan</option>
+          <option value="Disalurkan">Disalurkan</option>
+        </select>
+        <div class="spacer"></div>
+        <button class="btn btn-primary admin-only" onclick="openBansosModal()">+ Tambah Bansos</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Program</th><th>Penerima</th><th>NIK</th><th>Periode</th><th>Jumlah</th><th>Status</th><th>Aksi</th>
+          </tr></thead>
+          <tbody id="bansosBody"></tbody>
+        </table>
+      </div>
+      <p class="small-muted" id="bansosCount" style="margin-top:10px;"></p>
+    </div>
+  </section>
+
+  <!-- ================= WILAYAH ================= -->
+  <section id="view-wilayah" class="view">
+    <div class="panel">
+      <h2>Lokasi di Peta</h2>
+      <p class="desc">Klik peta atau tombol di bawah untuk membuka lokasi Desa Tambi langsung di Google Maps.</p>
+      <a href="https://www.google.com/maps/search/?api=1&query=Desa+Tambi+Indramayu+Jawa+Barat" target="_blank" rel="noopener" style="display:block;border-radius:8px;overflow:hidden;border:1px solid var(--line);text-decoration:none;">
+        <iframe
+          src="https://maps.google.com/maps?q=Desa+Tambi+Indramayu+Jawa+Barat&output=embed"
+          width="100%" height="320" style="border:0;display:block;pointer-events:none;" loading="lazy">
+        </iframe>
+      </a>
+      <div class="modal-actions" style="justify-content:flex-start;margin-top:14px;">
+        <a class="btn btn-gold" style="text-decoration:none;" href="https://www.google.com/maps/search/?api=1&query=Desa+Tambi+Indramayu+Jawa+Barat" target="_blank" rel="noopener">
+          Buka di Google Maps &rarr;
+        </a>
+      </div>
+      <p class="small-muted" style="margin-top:10px;">
+        Peta mengikuti hasil pencarian Google untuk "Desa Tambi, Indramayu, Jawa Barat". Jika titik yang muncul kurang tepat, sesuaikan pencarian langsung di Google Maps.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ MODAL: Tambah/Edit Penduduk ============ -->
+<div class="modal-overlay" id="modalPenduduk">
+  <div class="modal">
+    <h3 id="pendudukModalTitle">Tambah Data Penduduk</h3>
+    <p class="sub">Isi data sesuai KTP / Kartu Keluarga.</p>
+    <div class="form-grid">
+      <div class="field"><label>NIK</label><input id="f_nik" maxlength="16" placeholder="16 digit NIK"></div>
+      <div class="field"><label>No. Kartu Keluarga</label><input id="f_kk" maxlength="16" placeholder="16 digit No. KK"></div>
+      <div class="field full"><label>Nama Lengkap</label><input id="f_nama" placeholder="Nama sesuai KTP"></div>
+      <div class="field"><label>Tempat Lahir</label><input id="f_tempatlahir"></div>
+      <div class="field"><label>Tanggal Lahir</label><input id="f_tgllahir" type="date"></div>
+      <div class="field"><label>Jenis Kelamin</label>
+        <select id="f_jk"><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>
+      </div>
+      <div class="field"><label>Status Perkawinan</label>
+        <select id="f_status"><option>Belum Kawin</option><option>Kawin</option><option>Cerai Hidup</option><option>Cerai Mati</option></select>
+      </div>
+      <div class="field full"><label>Alamat</label><input id="f_alamat" placeholder="Nama jalan / kampung"></div>
+      <div class="field"><label>Dusun</label><input id="f_dusun" placeholder="cth. Dusun I"></div>
+      <div class="field"><label>RT</label><input id="f_rt" placeholder="001"></div>
+      <div class="field"><label>RW</label><input id="f_rw" placeholder="001"></div>
+      <div class="field"><label>Agama</label>
+        <select id="f_agama"><option>Islam</option><option>Kristen</option><option>Katolik</option><option>Hindu</option><option>Buddha</option><option>Konghucu</option></select>
+      </div>
+      <div class="field"><label>Pendidikan Terakhir</label>
+        <select id="f_pendidikan"><option>Tidak/Belum Sekolah</option><option>SD</option><option>SMP</option><option>SMA/SMK</option><option>D1-D3</option><option>S1</option><option>S2/S3</option></select>
+      </div>
+      <div class="field"><label>Pekerjaan</label><input id="f_pekerjaan" placeholder="cth. Petani"></div>
+      <div class="field"><label>No. HP</label><input id="f_hp" placeholder="08xxxxxxxxxx"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalPenduduk')">Batal</button>
+      <button class="btn btn-primary" onclick="savePenduduk()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: Import File ============ -->
+<div class="modal-overlay" id="modalImport">
+  <div class="modal">
+    <h3>Impor Data Penduduk dari File</h3>
+    <p class="sub">Unggah file CSV berisi data penduduk. Baris pertama harus berupa judul kolom.</p>
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+      <strong>Klik untuk pilih file</strong> atau seret file CSV ke sini<br>
+      <span style="font-size:12px;">Format: nik, kk, nama, tempat_lahir, tgl_lahir, jk, alamat, dusun, rt, rw, agama, pendidikan, pekerjaan, status, no_hp</span>
+    </div>
+    <input type="file" id="fileInput" accept=".csv" style="display:none">
+    <p class="small-muted" style="margin-top:10px;">
+      Belum punya file? <a href="#" onclick="downloadTemplate();return false;">Unduh template CSV</a> terlebih dahulu, isi datanya, lalu unggah kembali.
+    </p>
+    <div id="importPreview"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalImport')">Batal</button>
+      <button class="btn btn-primary" id="confirmImportBtn" style="display:none;" onclick="confirmImport()">Impor Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: Tambah Bansos ============ -->
+<div class="modal-overlay" id="modalBansos">
+  <div class="modal">
+    <h3>Tambah Data Bansos</h3>
+    <p class="sub">Hubungkan penyaluran bantuan dengan penduduk yang sudah terdaftar.</p>
+    <div class="form-grid">
+      <div class="field full"><label>Nama Program</label>
+        <select id="b_program">
+          <option>PKH (Program Keluarga Harapan)</option>
+          <option>BPNT / Kartu Sembako</option>
+          <option>BLT Dana Desa</option>
+          <option>Bantuan Pangan Non Tunai</option>
+          <option>Bantuan Rumah Tidak Layak Huni</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+      <div class="field full"><label>Penerima (cari NIK / Nama)</label>
+        <input id="b_cari_penerima" list="listPenduduk" placeholder="Ketik NIK atau nama penduduk" oninput="pickPenerima()">
+        <datalist id="listPenduduk"></datalist>
+      </div>
+      <div class="field"><label>NIK Penerima</label><input id="b_nik" readonly></div>
+      <div class="field"><label>Nama Penerima</label><input id="b_nama" readonly></div>
+      <div class="field"><label>Periode</label><input id="b_periode" placeholder="cth. Triwulan I 2026"></div>
+      <div class="field"><label>Jumlah (Rp)</label><input id="b_jumlah" type="number" placeholder="cth. 600000"></div>
+      <div class="field"><label>Status</label>
+        <select id="b_status"><option>Belum Disalurkan</option><option>Disalurkan</option></select>
+      </div>
+      <div class="field"><label>Tanggal Penyaluran</label><input id="b_tanggal" type="date"></div>
+      <div class="field full"><label>Keterangan</label><textarea id="b_ket" placeholder="Catatan tambahan (opsional)"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalBansos')">Batal</button>
+      <button class="btn btn-primary" onclick="saveBansos()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: Login Admin ============ -->
+<div class="modal-overlay" id="modalAdmin">
+  <div class="modal" style="max-width:400px;">
+    <h3>Masuk sebagai Admin</h3>
+    <p class="sub">Hanya perangkat desa yang berwenang yang boleh menambah/mengubah data. Masukkan kata sandi admin.</p>
+    <div class="field">
+      <label>Kata Sandi</label>
+      <input id="adminPasswordInput" type="password" placeholder="Kata sandi admin" onkeydown="if(event.key==='Enter') submitAdminLogin()">
+    </div>
+    <p class="small-muted" id="adminLoginError" style="color:var(--brick);margin-top:8px;"></p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalAdmin')">Batal</button>
+      <button class="btn btn-primary" onclick="submitAdminLogin()">Masuk</button>
+    </div>
+    <div class="note" style="margin-top:16px;" id="adminChangePassBox">
+      <div class="admin-only field-block-inline">
+        <a href="#" onclick="promptChangePassword();return false;">Ubah kata sandi admin</a>
+      </div>
+    
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let penduduk = [];
+let bansos = [];
+let adminConfig = { password: 'bima666' };
+let isAdmin = false;
+let editingPendudukId = null;
+let importRows = [];
+
+const PKEY = 'penduduk-list';
+const BKEY = 'bansos-list';
+const AKEY = 'admin-config';
+
+async function storageGet(key){
+  try{
+    const r = await window.storage.get(key, true);
+    return r ? JSON.parse(r.value) : null;
+  }catch(e){ return null; }
+}
+async function storageSet(key, value){
+  try{
+    const r = await window.storage.set(key, JSON.stringify(value), true);
+    return !!r;
+  }catch(e){ console.error(e); return false; }
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  if(name==='penduduk') renderPendudukTable();
+  if(name==='bansos') renderBansosTable();
+  if(name==='dashboard') renderDashboard();
+}
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+/* ---------------- INIT ---------------- */
+async function init(){
+  const [p, b, a] = await Promise.all([storageGet(PKEY), storageGet(BKEY), storageGet(AKEY)]);
+  penduduk = p || [];
+  bansos = b || [];
+  if(a && a.password) adminConfig = a;
+  else await storageSet(AKEY, adminConfig);
+  applyAdminUI();
+  renderDashboard();
+}
+init();
+
+/* ---------------- ADMIN ---------------- */
+function applyAdminUI(){
+  document.body.classList.toggle('is-admin', isAdmin);
+  document.getElementById('adminBadge').style.display = isAdmin ? 'flex' : 'none';
+  document.getElementById('loginBtn').style.display = isAdmin ? 'none' : 'inline-flex';
+  document.getElementById('logoutBtn').style.display = isAdmin ? 'inline-flex' : 'none';
+  renderPendudukTable();
+  renderBansosTable();
+}
+
+function openAdminLogin(){
+  document.getElementById('adminPasswordInput').value = '';
+  document.getElementById('adminLoginError').textContent = '';
+  document.getElementById('modalAdmin').classList.add('open');
+}
+
+async function submitAdminLogin(){
+  const val = document.getElementById('adminPasswordInput').value;
+  if(!adminConfig.password){
+    const a = await storageGet(AKEY);
+    if(a && a.password) adminConfig = a;
+  }
+  if(val === adminConfig.password){
+    isAdmin = true;
+    applyAdminUI();
+    closeModal('modalAdmin');
+    showToast('Berhasil masuk sebagai admin');
+  } else {
+    document.getElementById('adminLoginError').textContent = 'Kata sandi salah, coba lagi.';
+  }
+}
+
+function logoutAdmin(){
+  isAdmin = false;
+  applyAdminUI();
+  showToast('Keluar dari mode admin');
+}
+
+async function promptChangePassword(){
+  if(!isAdmin) return;
+  const current = prompt('Masukkan kata sandi admin saat ini untuk konfirmasi:');
+  if(current !== adminConfig.password){ showToast('Kata sandi saat ini salah'); return; }
+  const next = prompt('Masukkan kata sandi admin baru:');
+  if(!next || next.trim().length < 4){ showToast('Kata sandi baru minimal 4 karakter'); return; }
+  adminConfig = { password: next.trim() };
+  const ok = await storageSet(AKEY, adminConfig);
+  showToast(ok ? 'Kata sandi admin berhasil diubah' : 'Gagal menyimpan kata sandi baru');
+}
+
+/* ---------------- DASHBOARD ---------------- */
+function renderDashboard(){
+  const total = penduduk.length;
+  const lk = penduduk.filter(p=>p.jk==='Laki-laki').length;
+  const pr = penduduk.filter(p=>p.jk==='Perempuan').length;
+  const kk = new Set(penduduk.map(p=>p.kk).filter(Boolean)).size;
+  const totalBansosRp = bansos.filter(b=>b.status==='Disalurkan').reduce((s,b)=>s+(Number(b.jumlah)||0),0);
+  const penerimaAktif = new Set(bansos.map(b=>b.nik)).size;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card"><div class="label">Total Penduduk</div><div class="value">${total}</div><div class="sub">jiwa terdaftar</div></div>
+    <div class="stat-card"><div class="label">Laki-laki / Perempuan</div><div class="value">${lk} / ${pr}</div><div class="sub">berdasar jenis kelamin</div></div>
+    <div class="stat-card"><div class="label">Jumlah KK</div><div class="value">${kk}</div><div class="sub">kartu keluarga unik</div></div>
+    <div class="stat-card"><div class="label">Bansos Tersalurkan</div><div class="value">Rp ${totalBansosRp.toLocaleString('id-ID')}</div><div class="sub">${penerimaAktif} penerima tercatat</div></div>
+  `;
+
+  renderDusunBars('dusunBars');
+
+  const belum = bansos.filter(b=>b.status==='Belum Disalurkan').length;
+  const sudah = bansos.filter(b=>b.status==='Disalurkan').length;
+  document.getElementById('bansosSummary').innerHTML = bansos.length ? `
+    <div class="info-row"><span class="k">Total program tercatat</span><span class="v">${bansos.length}</span></div>
+    <div class="info-row"><span class="k">Sudah disalurkan</span><span class="v">${sudah}</span></div>
+    <div class="info-row"><span class="k">Belum disalurkan</span><span class="v">${belum}</span></div>
+  ` : `<p class="small-muted">Belum ada data bansos.</p>`;
+}
+
+function renderDusunBars(targetId){
+  const el = document.getElementById(targetId);
+  if(!penduduk.length){ el.innerHTML = '<p class="small-muted">Belum ada data penduduk.</p>'; return; }
+  const counts = {};
+  penduduk.forEach(p=>{ const d = p.dusun || 'Tanpa Dusun'; counts[d] = (counts[d]||0)+1; });
+  const max = Math.max(...Object.values(counts));
+  el.innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([name,count])=>`
+    <div class="dusun-bar-row">
+      <div class="name">${escapeHtml(name)}</div>
+      <div class="dusun-bar-track"><div class="dusun-bar-fill" style="width:${(count/max*100).toFixed(0)}%"></div></div>
+      <div class="count">${count}</div>
+    </div>`).join('');
+}
+
+/* ---------------- PENDUDUK ---------------- */
+function refreshDusunFilterOptions(){
+  const sel = document.getElementById('filterDusun');
+  const cur = sel.value;
+  const dusuns = [...new Set(penduduk.map(p=>p.dusun).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Semua Dusun</option>' + dusuns.map(d=>`<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+  sel.value = cur;
+}
+
+function renderPendudukTable(){
+  refreshDusunFilterOptions();
+  const q = (document.getElementById('searchPenduduk').value||'').toLowerCase();
+  const dusunFilter = document.getElementById('filterDusun').value;
+  let rows = penduduk.filter(p=>{
+    const matchQ = !q || (p.nama||'').toLowerCase().includes(q) || (p.nik||'').includes(q) || (p.dusun||'').toLowerCase().includes(q);
+    const matchD = !dusunFilter || p.dusun===dusunFilter;
+    return matchQ && matchD;
+  });
+  const body = document.getElementById('pendudukBody');
+  if(!rows.length){
+    body.innerHTML = `<tr><td colspan="8" class="empty-row">Belum ada data yang cocok. Tambahkan data penduduk secara manual atau impor dari file.</td></tr>`;
+  } else {
+    body.innerHTML = rows.map(p=>`
+      <tr>
+        <td>${escapeHtml(p.nik||'-')}</td>
+        <td>${escapeHtml(p.nama||'-')}</td>
+        <td><span class="tag ${p.jk==='Laki-laki'?'tag-green':'tag-gold'}">${p.jk==='Laki-laki'?'L':'P'}</span></td>
+        <td>${escapeHtml(p.tgllahir||'-')}</td>
+        <td>${escapeHtml(p.dusun||'-')} / RT ${escapeHtml(p.rt||'-')} / RW ${escapeHtml(p.rw||'-')}</td>
+        <td>${escapeHtml(p.pekerjaan||'-')}</td>
+        <td>${escapeHtml(p.hp||'-')}</td>
+        <td>
+          <button class="btn btn-sm btn-outline admin-only" onclick="editPenduduk('${p.id}')">Ubah</button>
+          <button class="btn btn-sm btn-danger admin-only" onclick="deletePenduduk('${p.id}')">Hapus</button>
+          <span class="small-muted viewer-hide-note">Lihat saja</span>
+        </td>
+      </tr>`).join('');
+  }
+  document.getElementById('pendudukCount').textContent = `Menampilkan ${rows.length} dari ${penduduk.length} data penduduk.`;
+}
+
+function openPendudukModal(){
+  editingPendudukId = null;
+  document.getElementById('pendudukModalTitle').textContent = 'Tambah Data Penduduk';
+  ['nik','kk','nama','tempatlahir','tgllahir','alamat','dusun','rt','rw','pekerjaan','hp'].forEach(id=>document.getElementById('f_'+id).value='');
+  document.getElementById('f_jk').value = 'Laki-laki';
+  document.getElementById('f_status').value = 'Belum Kawin';
+  document.getElementById('f_agama').value = 'Islam';
+  document.getElementById('f_pendidikan').value = 'SD';
+  document.getElementById('modalPenduduk').classList.add('open');
+}
+
+function editPenduduk(id){
+  const p = penduduk.find(x=>x.id===id);
+  if(!p) return;
+  editingPendudukId = id;
+  document.getElementById('pendudukModalTitle').textContent = 'Ubah Data Penduduk';
+  document.getElementById('f_nik').value = p.nik||'';
+  document.getElementById('f_kk').value = p.kk||'';
+  document.getElementById('f_nama').value = p.nama||'';
+  document.getElementById('f_tempatlahir').value = p.tempatlahir||'';
+  document.getElementById('f_tgllahir').value = p.tgllahir||'';
+  document.getElementById('f_jk').value = p.jk||'Laki-laki';
+  document.getElementById('f_status').value = p.status||'Belum Kawin';
+  document.getElementById('f_alamat').value = p.alamat||'';
+  document.getElementById('f_dusun').value = p.dusun||'';
+  document.getElementById('f_rt').value = p.rt||'';
+  document.getElementById('f_rw').value = p.rw||'';
+  document.getElementById('f_agama').value = p.agama||'Islam';
+  document.getElementById('f_pendidikan').value = p.pendidikan||'SD';
+  document.getElementById('f_pekerjaan').value = p.pekerjaan||'';
+  document.getElementById('f_hp').value = p.hp||'';
+  document.getElementById('modalPenduduk').classList.add('open');
+}
+
+async function savePenduduk(){
+  const nama = document.getElementById('f_nama').value.trim();
+  if(!nama){ showToast('Nama wajib diisi'); return; }
+  const data = {
+    id: editingPendudukId || uid(),
+    nik: document.getElementById('f_nik').value.trim(),
+    kk: document.getElementById('f_kk').value.trim(),
+    nama,
+    tempatlahir: document.getElementById('f_tempatlahir').value.trim(),
+    tgllahir: document.getElementById('f_tgllahir').value,
+    jk: document.getElementById('f_jk').value,
+    status: document.getElementById('f_status').value,
+    alamat: document.getElementById('f_alamat').value.trim(),
+    dusun: document.getElementById('f_dusun').value.trim(),
+    rt: document.getElementById('f_rt').value.trim(),
+    rw: document.getElementById('f_rw').value.trim(),
+    agama: document.getElementById('f_agama').value,
+    pendidikan: document.getElementById('f_pendidikan').value,
+    pekerjaan: document.getElementById('f_pekerjaan').value.trim(),
+    hp: document.getElementById('f_hp').value.trim(),
+  };
+  if(editingPendudukId){
+    penduduk = penduduk.map(p=>p.id===editingPendudukId?data:p);
+  } else {
+    penduduk.push(data);
+  }
+  const ok = await storageSet(PKEY, penduduk);
+  closeModal('modalPenduduk');
+  renderPendudukTable();
+  renderDashboard();
+  showToast(ok ? 'Data penduduk tersimpan' : 'Gagal menyimpan ke penyimpanan, data hanya tersimpan sementara');
+}
+
+async function deletePenduduk(id){
+  if(!confirm('Hapus data penduduk ini?')) return;
+  penduduk = penduduk.filter(p=>p.id!==id);
+  await storageSet(PKEY, penduduk);
+  renderPendudukTable();
+  renderDashboard();
+  showToast('Data penduduk dihapus');
+}
+
+function exportPendudukCSV(){
+  if(!penduduk.length){ showToast('Belum ada data untuk diekspor'); return; }
+  const headers = ['nik','kk','nama','tempatlahir','tgllahir','jk','alamat','dusun','rt','rw','agama','pendidikan','pekerjaan','status','hp'];
+  const rows = [headers.join(',')].concat(penduduk.map(p=>headers.map(h=>`"${(p[h]||'').toString().replace(/"/g,'""')}"`).join(',')));
+  downloadCSV(rows.join('\\n'), 'data-penduduk-tambi.csv');
+}
+
+function downloadTemplate(){
+  const headers = ['nik','kk','nama','tempat_lahir','tgl_lahir','jk','alamat','dusun','rt','rw','agama','pendidikan','pekerjaan','status','no_hp'];
+  const example = ['3212xxxxxxxxxxxx','3212xxxxxxxxxxxx','Contoh Nama','Indramayu','1990-05-10','Laki-laki','Blok Contoh','Dusun I','001','001','Islam','SMA/SMK','Petani','Kawin','081234567890'];
+  const content = headers.join(',')+'\\n'+example.join(',');
+  downloadCSV(content, 'template-data-penduduk.csv');
+}
+
+function downloadCSV(content, filename){
+  const blob = new Blob([content], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ---------------- IMPORT ---------------- */
+function openImportModal(){
+  importRows = [];
+  document.getElementById('importPreview').innerHTML = '';
+  document.getElementById('confirmImportBtn').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('modalImport').classList.add('open');
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  handleImportFile(file);
+});
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', e=>{ e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', ()=> dz.classList.remove('drag'));
+dz.addEventListener('drop', e=>{
+  e.preventDefault(); dz.classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if(file) handleImportFile(file);
+});
+
+function handleImportFile(file){
+  Papa.parse(file, {
+    header:true,
+    skipEmptyLines:true,
+    complete: function(results){
+      importRows = results.data.map(row=>({
+        id: uid(),
+        nik: (row.nik||'').trim(),
+        kk: (row.kk||'').trim(),
+        nama: (row.nama||'').trim(),
+        tempatlahir: (row.tempat_lahir||row.tempatlahir||'').trim(),
+        tgllahir: (row.tgl_lahir||row.tgllahir||'').trim(),
+        jk: /p/i.test((row.jk||'').trim()[0]||'') ? 'Perempuan' : 'Laki-laki',
+        alamat: (row.alamat||'').trim(),
+        dusun: (row.dusun||'').trim(),
+        rt: (row.rt||'').trim(),
+        rw: (row.rw||'').trim(),
+        agama: (row.agama||'Islam').trim(),
+        pendidikan: (row.pendidikan||'-').trim(),
+        pekerjaan: (row.pekerjaan||'').trim(),
+        status: (row.status||'Belum Kawin').trim(),
+        hp: (row.no_hp||row.hp||'').trim(),
+      })).filter(r=>r.nama);
+      renderImportPreview();
+    },
+    error: function(err){ showToast('Gagal membaca file: '+err.message); }
+  });
+}
+
+function renderImportPreview(){
+  const el = document.getElementById('importPreview');
+  if(!importRows.length){ el.innerHTML = '<p class="small-muted">Tidak ada baris valid ditemukan di file.</p>'; return; }
+  el.innerHTML = `
+    <p class="small-muted" style="margin-top:14px;">Ditemukan <strong>${importRows.length}</strong> baris data. Pratinjau 5 baris pertama:</p>
+    <div class="table-wrap" style="margin-top:8px;">
+      <table><thead><tr><th>NIK</th><th>Nama</th><th>Dusun</th><th>RT/RW</th></tr></thead>
+      <tbody>${importRows.slice(0,5).map(r=>`<tr><td>${escapeHtml(r.nik)}</td><td>${escapeHtml(r.nama)}</td><td>${escapeHtml(r.dusun)}</td><td>${escapeHtml(r.rt)}/${escapeHtml(r.rw)}</td></tr>`).join('')}</tbody></table>
+    </div>`;
+  document.getElementById('confirmImportBtn').style.display = 'inline-flex';
+}
+
+async function confirmImport(){
+  penduduk = penduduk.concat(importRows);
+  const ok = await storageSet(PKEY, penduduk);
+  closeModal('modalImport');
+  renderPendudukTable();
+  renderDashboard();
+  showToast(ok ? `${importRows.length} data berhasil diimpor` : 'Impor selesai tapi gagal tersimpan permanen');
+}
+
+/* ---------------- BANSOS ---------------- */
+function refreshPendudukDatalist(){
+  document.getElementById('listPenduduk').innerHTML = penduduk.map(p=>`<option value="${escapeHtml(p.nik)} — ${escapeHtml(p.nama)}">`).join('');
+}
+
+function pickPenerima(){
+  const val = document.getElementById('b_cari_penerima').value;
+  const nik = val.split(' — ')[0].trim();
+  const match = penduduk.find(p=>p.nik===nik) || penduduk.find(p=>p.nama.toLowerCase()===val.toLowerCase());
+  if(match){
+    document.getElementById('b_nik').value = match.nik;
+    document.getElementById('b_nama').value = match.nama;
+  } else {
+    document.getElementById('b_nik').value = '';
+    document.getElementById('b_nama').value = '';
+  }
+}
+
+function openBansosModal(){
+  refreshPendudukDatalist();
+  ['b_cari_penerima','b_nik','b_nama','b_periode','b_jumlah','b_tanggal','b_ket'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('b_program').selectedIndex = 0;
+  document.getElementById('b_status').value = 'Belum Disalurkan';
+  document.getElementById('modalBansos').classList.add('open');
+}
+
+async function saveBansos(){
+  const nik = document.getElementById('b_nik').value;
+  const nama = document.getElementById('b_nama').value;
+  if(!nama){ showToast('Pilih penerima yang sudah terdaftar di Data Penduduk'); return; }
+  const data = {
+    id: uid(),
+    program: document.getElementById('b_program').value,
+    nik, nama,
+    periode: document.getElementById('b_periode').value.trim(),
+    jumlah: Number(document.getElementById('b_jumlah').value)||0,
+    status: document.getElementById('b_status').value,
+    tanggal: document.getElementById('b_tanggal').value,
+    keterangan: document.getElementById('b_ket').value.trim(),
+  };
+  bansos.push(data);
+  const ok = await storageSet(BKEY, bansos);
+  closeModal('modalBansos');
+  renderBansosTable();
+  renderDashboard();
+  showToast(ok ? 'Data bansos tersimpan' : 'Gagal menyimpan ke penyimpanan, data hanya tersimpan sementara');
+}
+
+async function deleteBansos(id){
+  if(!confirm('Hapus data bansos ini?')) return;
+  bansos = bansos.filter(b=>b.id!==id);
+  await storageSet(BKEY, bansos);
+  renderBansosTable();
+  renderDashboard();
+  showToast('Data bansos dihapus');
+}
+
+async function toggleBansosStatus(id){
+  bansos = bansos.map(b=> b.id===id ? {...b, status: b.status==='Disalurkan' ? 'Belum Disalurkan' : 'Disalurkan'} : b);
+  await storageSet(BKEY, bansos);
+  renderBansosTable();
+  renderDashboard();
+}
+
+function renderBansosTable(){
+  const q = (document.getElementById('searchBansos').value||'').toLowerCase();
+  const statusFilter = document.getElementById('filterStatusBansos').value;
+  let rows = bansos.filter(b=>{
+    const matchQ = !q || (b.nama||'').toLowerCase().includes(q) || (b.program||'').toLowerCase().includes(q);
+    const matchS = !statusFilter || b.status===statusFilter;
+    return matchQ && matchS;
+  });
+  const body = document.getElementById('bansosBody');
+  if(!rows.length){
+    body.innerHTML = `<tr><td colspan="7" class="empty-row">Belum ada data bansos yang cocok. Tambahkan penyaluran baru di atas.</td></tr>`;
+  } else {
+    body.innerHTML = rows.map(b=>`
+      <tr>
+        <td>${escapeHtml(b.program)}</td>
+        <td>${escapeHtml(b.nama)}</td>
+        <td>${escapeHtml(b.nik||'-')}</td>
+        <td>${escapeHtml(b.periode||'-')}</td>
+        <td>Rp ${(Number(b.jumlah)||0).toLocaleString('id-ID')}</td>
+        <td><span class="tag ${b.status==='Disalurkan'?'tag-green':'tag-brick'}">${b.status}</span></td>
+        <td>
+          <button class="btn btn-sm btn-outline admin-only" onclick="toggleBansosStatus('${b.id}')">Ubah Status</button>
+          <button class="btn btn-sm btn-danger admin-only" onclick="deleteBansos('${b.id}')">Hapus</button>
+          <span class="small-muted viewer-hide-note">Lihat saja</span>
+        </td>
+      </tr>`).join('');
+  }
+  document.getElementById('bansosCount').textContent = `Menampilkan ${rows.length} dari ${bansos.length} data bansos.`;
+}
+
+/* ---------------- UTIL ---------------- */
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function escapeHtml(str){
+  return (str===undefined||str===null?'':String(str)).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+document.querySelectorAll('.modal-overlay').forEach(ov=>{
+  ov.addEventListener('click', e=>{ if(e.target===ov) ov.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
