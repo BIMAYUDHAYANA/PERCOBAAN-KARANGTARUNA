@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sesajen Hutan</title>
+<style>
+  :root{
+    --bg:#0e1f14; --leaf:#16321f; --leaf2:#0d2416; --path:#4a3b26;
+    --bunga:#e15a97; --buah:#e8933a; --gold:#e8b84b; --ok:#4bd18a; --text:#eef1e6;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);overflow:hidden;
+    font-family:'Georgia',serif;color:var(--text);
+    padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+  #wrap{position:relative;width:100vw;height:100vh;display:flex;flex-direction:column;}
+  #hud{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;
+    background:linear-gradient(180deg,#0e1f14,rgba(14,31,20,0.4));z-index:5;font-size:14px;letter-spacing:.4px}
+  #hud .stat{margin-right:16px}
+  #hud .bunga{color:var(--bunga)} #hud .buah{color:var(--buah)}
+  #stage{position:relative;flex:1;overflow:hidden;background:radial-gradient(ellipse at 50% 100%,#1a3322,#081209 75%);}
+  canvas{position:absolute;top:0;left:0;display:block;}
+  #toolbar{display:flex;gap:14px;justify-content:center;align-items:center;padding:10px 8px;
+    background:linear-gradient(0deg,#0e1f14,rgba(14,31,20,0.5));z-index:5;
+    padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));}
+  .slot{min-width:110px;padding:8px 10px;border-radius:10px;border:2px solid #2a4030;background:#122317;
+    text-align:center;}
+  .slot .icon{font-size:20px}
+  .slot .label{font-size:11px;margin-top:2px;color:#cfe0cd}
+  .slot .bar{margin-top:5px;height:6px;background:#0008;border-radius:4px;overflow:hidden}
+  .slot .bar b{display:block;height:100%;width:0%;}
+  .slot.bunga .bar b{background:var(--bunga)}
+  .slot.buah .bar b{background:var(--buah)}
+  #msg{position:absolute;left:50%;top:14px;transform:translateX(-50%);
+    background:rgba(8,12,9,0.88);padding:6px 16px;border-radius:20px;font-size:13px;
+    border:1px solid #2a4030;z-index:6;pointer-events:none;opacity:0;transition:opacity .3s;white-space:nowrap;}
+  #msg.show{opacity:1}
+  #startScreen,#endScreen{position:absolute;inset:0;background:rgba(4,8,5,0.93);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;text-align:center;padding:20px;}
+  #startScreen h1,#endScreen h1{font-size:30px;color:var(--gold);margin:0 0 8px;text-shadow:0 0 12px #000}
+  #startScreen p,#endScreen p{max-width:460px;line-height:1.6;color:#dbe6d6;font-size:14px}
+  button.big{margin-top:18px;padding:12px 28px;font-size:16px;border-radius:8px;border:none;
+    background:var(--gold);color:#251a06;font-weight:bold;cursor:pointer;}
+  button.big:hover{background:#f5cb63}
+  #hint{position:absolute;bottom:96px;left:50%;transform:translateX(-50%);font-size:11px;color:#a8bfa0;z-index:5;text-align:center;pointer-events:none;line-height:1.5;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="hud">
+    <div><span class="stat bunga">🌸 Bunga <span id="bungaVal">0</span>/<span id="bungaTarget">0</span></span>
+         <span class="stat buah">🍊 Buah <span id="buahVal">0</span>/<span id="buahTarget">0</span></span></div>
+    <div class="stat">🛕 Bawa ke sesajen saat lengkap</div>
+  </div>
+  <div id="stage">
+    <canvas id="game"></canvas>
+    <div id="msg"></div>
+    <div id="hint">P1: WASD gerak, E ambil &nbsp;•&nbsp; P2: Panah gerak, Enter ambil &nbsp;•&nbsp; Awas 👻 setan &amp; 🐷 babi ngepet yang berpatroli — kalau mendekat, mereka akan mengejar!</div>
+    <div id="startScreen">
+      <h1>🌺 Sesajen Hutan</h1>
+      <p>Berdua kalian menyusuri hutan mencari bahan sesajen: bunga-bunga dan buah-buahan yang tersembunyi di antara semak. Tapi hutan ini dijaga setan dan babi ngepet yang akan mengejar begitu kalian terlalu dekat — kalau tertangkap saat membawa bahan, bahannya terjatuh! Bagi tugas berdua, kumpulkan semuanya, lalu bawa ke altar sesajen di tengah hutan untuk menyelesaikan ritual.</p>
+      <p style="font-size:12px;color:#9fb69a">Pemain 1: WASD + E &nbsp;&nbsp; Pemain 2: Panah + Enter</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px">
+        <input id="nameP1" maxlength="12" placeholder="Nama Pemain 1" style="padding:8px 10px;border-radius:8px;border:2px solid #2a4030;background:#0f1e13;color:#eef1e6;font-family:Georgia,serif;font-size:14px;width:150px;text-align:center">
+        <input id="nameP2" maxlength="12" placeholder="Nama Pemain 2" style="padding:8px 10px;border-radius:8px;border:2px solid #2a4030;background:#0f1e13;color:#eef1e6;font-family:Georgia,serif;font-size:14px;width:150px;text-align:center">
+      </div>
+      <button class="big" id="startBtn">Mulai Menjelajah</button>
+    </div>
+    <div id="endScreen" style="display:none">
+      <h1 id="endTitle">Sesajen Lengkap!</h1>
+      <p id="endText"></p>
+      <button class="big" id="restartBtn">Main Lagi</button>
+    </div>
+  </div>
+  <div id="toolbar">
+    <div class="slot bunga"><div class="icon">🌸</div><div class="label">Bunga</div><div class="bar"><b id="bungaBar"></b></div></div>
+    <div class="slot buah"><div class="icon">🍊</div><div class="label">Buah</div><div class="bar"><b id="buahBar"></b></div></div>
+    <div class="slot"><div class="icon">🛕</div><div class="label" id="altarStatus">Altar menunggu</div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const stage = document.getElementById('stage');
+function resize(){canvas.width = stage.clientWidth; canvas.height = stage.clientHeight;}
+window.addEventListener('resize', resize); resize();
+
+const WORLD_W = 3000, WORLD_H = 1100;
+const TARGET_BUNGA = 6, TARGET_BUAH = 6;
+let sharedBunga = 0, sharedBuah = 0, deliveredBunga = 0, deliveredBuah = 0, gameOver=false;
+
+// altar in middle of world
+const altar = {x: WORLD_W/2 - 60, y: WORLD_H/2 - 60, w:120, h:120};
+
+// scatter bushes (obstacles that may hide an item) and trees (pure obstacles)
+const bushes = [];
+const trees = [];
+function rand(a,b){return a+Math.random()*(b-a);}
+
+for(let i=0;i<26;i++){
+  bushes.push({
+    x: rand(80, WORLD_W-140), y: rand(80, WORLD_H-140), r: 34,
+    hasItem: true, type: Math.random()<0.5?'bunga':'buah', collected:false, sway:Math.random()*10
+  });
+}
+// avoid bushes spawning inside altar
+for(const b of bushes){
+  if(Math.hypot(b.x-(altar.x+altar.w/2), b.y-(altar.y+altar.h/2)) < 160){ b.x += 220; }
+}
+for(let i=0;i<40;i++){
+  trees.push({x: rand(20, WORLD_W-40), y: rand(20, WORLD_H-40), r: rand(16,26)});
+}
+// keep trees away from altar center a bit
+for(const t of trees){
+  if(Math.hypot(t.x-(altar.x+altar.w/2), t.y-(altar.y+altar.h/2)) < 150){ t.x += 260; }
+}
+
+// musuh: setan (hantu) dan babi ngepet yang berpatroli & mengejar
+const enemies = [];
+function spawnEnemy(type){
+  enemies.push({
+    type, x: rand(150, WORLD_W-150), y: rand(150, WORLD_H-150),
+    speed: type==='babi' ? 1.8 : 1.5,
+    detect: type==='babi' ? 260 : 210,
+    state:'wander', wx: rand(80,WORLD_W-80), wy: rand(80,WORLD_H-80), waitT:0,
+    bob: Math.random()*10, targetPlayer:null
+  });
+}
+spawnEnemy('setan'); spawnEnemy('setan'); spawnEnemy('babi');
+
+const keys = {};
+window.addEventListener('keydown', e=>{
+  keys[e.key.toLowerCase()] = true;
+  if(e.key.toLowerCase()==='e') tryPick(p1);
+  if(e.key==='Enter') tryPick(p2);
+  if(['arrowup','arrowdown','arrowleft','arrowright','enter'].includes(e.key.toLowerCase())) e.preventDefault();
+});
+window.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+
+const p1 = {x: WORLD_W/2 - 160, y: WORLD_H/2 + 220, w:26, h:34, speed:3.2, dir:1, skin:'#c98a5c', shirt:'#e8b84b', pants:'#3a2a1a', hair:'#241a10', carrying:null, label:'P1', walkT:0, moving:false, invuln:0};
+const p2 = {x: WORLD_W/2 + 130, y: WORLD_H/2 + 220, w:26, h:34, speed:3.2, dir:1, skin:'#9c6a48', shirt:'#5ac0e8', pants:'#2a2a3a', hair:'#0f0f0f', carrying:null, label:'P2', walkT:0, moving:false, invuln:0};
+
+const camera = {x:0,y:0};
+
+function showMsg(text, ms){
+  const m = document.getElementById('msg');
+  m.textContent = text; m.classList.add('show');
+  clearTimeout(m._t);
+  m._t = setTimeout(()=>m.classList.remove('show'), ms||1500);
+}
+
+function dist(a,b){ return Math.hypot((a.x+a.w/2)-(b.x), (a.y+a.h/2)-(b.y)); }
+
+function tryPick(player){
+  if(gameOver) return;
+  if(player.carrying){
+    // try deliver at altar
+    const cx = altar.x+altar.w/2, cy = altar.y+altar.h/2;
+    if(Math.hypot((player.x+player.w/2)-cx,(player.y+player.h/2)-cy) < 90){
+      if(player.carrying==='bunga') deliveredBunga++; else deliveredBuah++;
+      showMsg((player.label)+' menaruh '+(player.carrying==='bunga'?'bunga 🌸':'buah 🍊')+' di altar', 1400);
+      player.carrying = null;
+      updateHUD();
+      checkComplete();
+    } else {
+      showMsg(player.label+' sudah membawa sesuatu, bawa ke altar dulu', 1200);
+    }
+    return;
+  }
+  for(const b of bushes){
+    if(b.collected) continue;
+    if(dist(player, b) < 46){
+      b.collected = true;
+      player.carrying = b.type;
+      showMsg(player.label+' menemukan '+(b.type==='bunga'?'bunga 🌸':'buah 🍊')+' di semak!', 1400);
+      return;
+    }
+  }
+  showMsg(player.label+': tidak ada semak untuk digeledah di sini', 1100);
+}
+
+function updateHUD(){
+  document.getElementById('bungaVal').textContent = deliveredBunga;
+  document.getElementById('bungaTarget').textContent = TARGET_BUNGA;
+  document.getElementById('buahVal').textContent = deliveredBuah;
+  document.getElementById('buahTarget').textContent = TARGET_BUAH;
+  document.getElementById('bungaBar').style.width = Math.min(100, deliveredBunga/TARGET_BUNGA*100)+'%';
+  document.getElementById('buahBar').style.width = Math.min(100, deliveredBuah/TARGET_BUAH*100)+'%';
+}
+updateHUD();
+
+function checkComplete(){
+  if(deliveredBunga>=TARGET_BUNGA && deliveredBuah>=TARGET_BUAH){
+    document.getElementById('altarStatus').textContent = 'Sesajen lengkap!';
+    winGame();
+  } else {
+    const remain = (TARGET_BUNGA-deliveredBunga)+(TARGET_BUAH-deliveredBuah);
+    document.getElementById('altarStatus').textContent = remain+' lagi dibutuhkan';
+  }
+}
+
+function winGame(){
+  gameOver = true;
+  document.getElementById('endTitle').textContent = 'Ritual Sesajen Selesai!';
+  document.getElementById('endText').textContent = 'Kalian berdua berhasil mengumpulkan '+TARGET_BUNGA+' bunga dan '+TARGET_BUAH+' buah, lalu melengkapi sesajen di altar hutan. Kerja sama yang solid!';
+  document.getElementById('endScreen').style.display='flex';
+}
+
+function collideCircle(px,py,pr, cx,cy,cr){
+  return Math.hypot(px-cx,py-cy) < (pr+cr);
+}
+
+function moveWithCollision(player, dx, dy, dt){
+  const step = player.speed*(dt/16.6);
+  let nx = player.x + dx*step;
+  let ny = player.y + dy*step;
+  const cx = nx+player.w/2, cy = ny+player.h/2;
+  let blocked = false;
+  for(const t of trees){
+    if(collideCircle(cx,cy,player.w/2, t.x,t.y,t.r)) { blocked = true; break; }
+  }
+  if(!blocked){ player.x = nx; player.y = ny; }
+  else {
+    // try sliding on one axis
+    if(!blockedAt(player.x, ny, player)) player.y = ny;
+    else if(!blockedAt(nx, player.y, player)) player.x = nx;
+  }
+  player.x = Math.max(0, Math.min(WORLD_W-player.w, player.x));
+  player.y = Math.max(0, Math.min(WORLD_H-player.h, player.y));
+}
+function blockedAt(x,y,player){
+  const cx=x+player.w/2, cy=y+player.h/2;
+  for(const t of trees){ if(collideCircle(cx,cy,player.w/2,t.x,t.y,t.r)) return true; }
+  return false;
+}
+
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(now-last, 40); last = now;
+  if(!gameOver) update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function update(dt){
+  let dx1=0, dy1=0;
+  if(keys['a']) dx1=-1; if(keys['d']) dx1=1;
+  if(keys['w']) dy1=-1; if(keys['s']) dy1=1;
+  p1.moving = !!(dx1||dy1);
+  if(p1.moving){ const l=Math.hypot(dx1,dy1); moveWithCollision(p1, dx1/l, dy1/l, dt); if(dx1) p1.dir=dx1; p1.walkT += dt*0.012; }
+
+  let dx2=0, dy2=0;
+  if(keys['arrowleft']) dx2=-1; if(keys['arrowright']) dx2=1;
+  if(keys['arrowup']) dy2=-1; if(keys['arrowdown']) dy2=1;
+  p2.moving = !!(dx2||dy2);
+  if(p2.moving){ const l=Math.hypot(dx2,dy2); moveWithCollision(p2, dx2/l, dy2/l, dt); if(dx2) p2.dir=dx2; p2.walkT += dt*0.012; }
+
+  const midX = (p1.x+p2.x)/2;
+  camera.x = Math.max(0, Math.min(WORLD_W-canvas.width, midX - canvas.width/2));
+  camera.y = Math.max(0, Math.min(WORLD_H-canvas.height, ((p1.y+p2.y)/2) - canvas.height/2));
+
+  if(p1.invuln>0) p1.invuln -= dt/16.6;
+  if(p2.invuln>0) p2.invuln -= dt/16.6;
+
+  updateEnemies(dt);
+}
+
+function updateEnemies(dt){
+  const players = [p1,p2];
+  for(const en of enemies){
+    en.bob += dt*0.01;
+    // find nearest player within detection range
+    let nearest=null, nearestD=Infinity;
+    for(const pl of players){
+      const d = Math.hypot((pl.x+pl.w/2)-en.x, (pl.y+pl.h/2)-en.y);
+      if(d<nearestD){ nearestD=d; nearest=pl; }
+    }
+    if(nearest && nearestD < en.detect){
+      en.state='chase'; en.targetPlayer=nearest;
+    } else if(en.state==='chase'){
+      en.state='wander'; en.wx = rand(80,WORLD_W-80); en.wy = rand(80,WORLD_H-80);
+    }
+
+    let tx,ty;
+    if(en.state==='chase' && en.targetPlayer){
+      tx = en.targetPlayer.x+en.targetPlayer.w/2; ty = en.targetPlayer.y+en.targetPlayer.h/2;
+    } else {
+      if(en.waitT>0){ en.waitT -= dt; tx=en.x; ty=en.y; }
+      else {
+        tx=en.wx; ty=en.wy;
+        if(Math.hypot(tx-en.x,ty-en.y) < 10){ en.waitT = rand(400,1400); en.wx=rand(80,WORLD_W-80); en.wy=rand(80,WORLD_H-80); }
+      }
+    }
+    const ang = Math.atan2(ty-en.y, tx-en.x);
+    const spd = en.speed*(en.state==='chase'?1.0:0.55)*(dt/16.6);
+    en.x += Math.cos(ang)*spd; en.y += Math.sin(ang)*spd;
+    en.x = Math.max(20, Math.min(WORLD_W-20, en.x));
+    en.y = Math.max(20, Math.min(WORLD_H-20, en.y));
+    en.facing = Math.cos(ang) < 0 ? -1 : 1;
+
+    // catch check
+    for(const pl of players){
+      if(pl.invuln>0) continue;
+      const d = Math.hypot((pl.x+pl.w/2)-en.x, (pl.y+pl.h/2)-en.y);
+      if(d < 26){
+        pl.invuln = 110;
+        const pushAng = Math.atan2((pl.y+pl.h/2)-en.y, (pl.x+pl.w/2)-en.x);
+        pl.x += Math.cos(pushAng)*70; pl.y += Math.sin(pushAng)*70;
+        pl.x = Math.max(0, Math.min(WORLD_W-pl.w, pl.x));
+        pl.y = Math.max(0, Math.min(WORLD_H-pl.h, pl.y));
+        if(pl.carrying){
+          showMsg((en.type==='babi'?'🐷 Babi ngepet':'👻 Setan')+' menangkap '+pl.label+'! '+(pl.carrying==='bunga'?'Bunga':'Buah')+' terjatuh!', 1800);
+          pl.carrying = null;
+        } else {
+          showMsg((en.type==='babi'?'🐷 Babi ngepet':'👻 Setan')+' menyerempet '+pl.label+'!', 1400);
+        }
+      }
+    }
+  }
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.translate(-camera.x, -camera.y);
+
+  // forest floor
+  ctx.fillStyle = '#16321f';
+  ctx.fillRect(0,0,WORLD_W,WORLD_H);
+  // subtle texture patches
+  ctx.fillStyle = '#123a1e';
+  for(let i=0;i<60;i++){
+    ctx.beginPath();
+    ctx.ellipse((i*137)%WORLD_W, (i*251)%WORLD_H, 40, 22, 0,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  // altar
+  ctx.fillStyle = '#7a6a4a';
+  ctx.fillRect(altar.x, altar.y, altar.w, altar.h);
+  ctx.strokeStyle = '#e8b84b'; ctx.lineWidth=3; ctx.strokeRect(altar.x,altar.y,altar.w,altar.h);
+  ctx.fillStyle = '#e8b84b'; ctx.font='13px Georgia'; ctx.textAlign='center';
+  ctx.fillText('🛕 Altar Sesajen', altar.x+altar.w/2, altar.y-10);
+  ctx.textAlign='left';
+
+  // bushes
+  for(const b of bushes){
+    ctx.fillStyle = b.collected ? '#1c3322' : '#265a34';
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#1c4527';
+    ctx.beginPath(); ctx.arc(b.x-10, b.y+8, b.r*0.6, 0, Math.PI*2); ctx.fill();
+    if(!b.collected){
+      ctx.font='16px Georgia'; ctx.textAlign='center';
+      ctx.fillText(b.type==='bunga'?'🌸':'🍊', b.x, b.y-b.r-6);
+      ctx.textAlign='left';
+    }
+  }
+
+  // trees (drawn after bushes so trunks look above)
+  for(const t of trees){
+    ctx.fillStyle = '#0d2416';
+    ctx.beginPath(); ctx.arc(t.x, t.y, t.r, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#5a4028';
+    ctx.fillRect(t.x-4, t.y+t.r-4, 8, 14);
+  }
+
+  for(const en of enemies) drawEnemy(en);
+
+  drawPlayer(p1);
+  drawPlayer(p2);
+
+  ctx.restore();
+}
+
+function drawEnemy(en){
+  const bobY = Math.sin(en.bob)*4;
+  ctx.save();
+  ctx.translate(en.x, en.y+bobY);
+  if(en.facing<0) ctx.scale(-1,1);
+  if(en.type==='setan'){
+    ctx.globalAlpha = 0.82;
+    ctx.fillStyle = '#eef2f5';
+    ctx.beginPath();
+    ctx.arc(0,-4,16,Math.PI,0);
+    ctx.lineTo(16,14);
+    for(let i=0;i<4;i++){
+      const wx = 16 - i*8;
+      ctx.quadraticCurveTo(wx-4, i%2===0?20:12, wx-8, 14);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha=1;
+    ctx.fillStyle = '#c0294a';
+    ctx.beginPath(); ctx.arc(-5,-6,2.4,0,Math.PI*2); ctx.arc(5,-6,2.4,0,Math.PI*2); ctx.fill();
+  } else {
+    // babi ngepet
+    ctx.fillStyle = '#7a4a3a';
+    ctx.beginPath(); ctx.ellipse(0,4,17,13,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#8a5a4a';
+    ctx.beginPath(); ctx.ellipse(12,-2,9,8,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#4a2a1e';
+    ctx.beginPath(); ctx.ellipse(17,-2,3.4,3,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#6a3a2a';
+    ctx.beginPath(); ctx.ellipse(8,-9,4,3,0.4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ff5c3c';
+    ctx.beginPath(); ctx.arc(14,-4,1.8,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#3a2a22';
+    ctx.fillRect(-10,12,5,7); ctx.fillRect(4,12,5,7);
+  }
+  ctx.restore();
+  ctx.fillStyle = en.state==='chase' ? '#ff6b6b' : '#b9c9b6';
+  ctx.font='11px Georgia'; ctx.textAlign='center';
+  ctx.fillText(en.type==='babi'?'Babi Ngepet':'Setan', en.x, en.y-24+bobY);
+  ctx.textAlign='left';
+}
+
+function drawPlayer(pl){
+  if(pl.invuln>0 && Math.floor(pl.invuln/6)%2===0) return;
+  // soft ground shadow
+  ctx.save();
+  ctx.translate(pl.x+pl.w/2, pl.y+pl.h+2);
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath(); ctx.ellipse(0,0,12,4,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  const swing = pl.moving ? Math.sin(pl.walkT)*11 : 0;
+  const bob = pl.moving ? Math.abs(Math.sin(pl.walkT))*2 : 0;
+  const armSwing = pl.moving ? Math.sin(pl.walkT+Math.PI)*9 : 0;
+
+  ctx.save();
+  ctx.translate(pl.x+pl.w/2, pl.y+pl.h/2 - bob);
+  ctx.scale(pl.dir,1);
+
+  // back leg
+  ctx.strokeStyle = pl.pants; ctx.lineWidth=6; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(-3,6); ctx.lineTo(-3+swing*0.4,17-Math.abs(swing*0.15)); ctx.stroke();
+  // back arm
+  ctx.strokeStyle = pl.skin; ctx.lineWidth=5;
+  ctx.beginPath(); ctx.moveTo(-6,-2); ctx.lineTo(-6-armSwing*0.5,8); ctx.stroke();
+
+  // torso (shirt)
+  ctx.fillStyle = pl.shirt;
+  roundRect(ctx,-8,-14,16,20,5); ctx.fill();
+
+  // front arm
+  ctx.strokeStyle = pl.skin; ctx.lineWidth=5;
+  ctx.beginPath(); ctx.moveTo(6,-2); ctx.lineTo(6+armSwing*0.5,8); ctx.stroke();
+  // front leg
+  ctx.strokeStyle = pl.pants; ctx.lineWidth=6;
+  ctx.beginPath(); ctx.moveTo(3,6); ctx.lineTo(3-swing*0.4,17-Math.abs(swing*0.15)); ctx.stroke();
+
+  // head
+  ctx.fillStyle = pl.skin;
+  ctx.beginPath(); ctx.arc(0,-20,8,0,Math.PI*2); ctx.fill();
+  // hair
+  ctx.fillStyle = pl.hair;
+  ctx.beginPath(); ctx.arc(0,-24,8,Math.PI,Math.PI*2); ctx.fill();
+  ctx.fillRect(-8,-24,16,4);
+  // face
+  ctx.fillStyle = '#241a10';
+  ctx.beginPath(); ctx.arc(3.5,-21,1.3,0,Math.PI*2); ctx.fill();
+
+  ctx.restore();
+
+  ctx.fillStyle = '#fff'; ctx.font='11px Georgia'; ctx.textAlign='center';
+  ctx.fillText(pl.label + (pl.carrying? (' ('+(pl.carrying==='bunga'?'🌸':'🍊')+')') : ''), pl.x+pl.w/2, pl.y-30);
+  ctx.textAlign='left';
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+document.getElementById('startBtn').onclick = ()=>{
+  const n1 = document.getElementById('nameP1').value.trim();
+  const n2 = document.getElementById('nameP2').value.trim();
+  if(n1) p1.label = n1;
+  if(n2) p2.label = n2;
+  document.getElementById('startScreen').style.display='none';
+  last = performance.now();
+  requestAnimationFrame(loop);
+};
+document.getElementById('restartBtn').onclick = ()=> location.reload();
+
+draw();
+})();
+</script>
+</body>
+</html>
