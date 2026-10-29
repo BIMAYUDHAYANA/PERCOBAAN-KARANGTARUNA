@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dinas Lingkungan Hidup Kabupaten Indramayu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#f4f8f3;--surface:#fff;--ink:#16261b;--muted:#51645a;--line:#d5e2d6;
+  --green:#1f6b3a;--green-d:#14492a;--lime:#8cc63f;--sun:#f2b705;--topbar:#0f3a21;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1a13;--surface:#16251b;--ink:#e6f0e8;--muted:#9fb5a6;--line:#27402f;--green:#4fae6f;--green-d:#0b2c18;--topbar:#071a0e;}}
+:root[data-theme="dark"]{--bg:#0f1a13;--surface:#16251b;--ink:#e6f0e8;--muted:#9fb5a6;--line:#27402f;--green:#4fae6f;--green-d:#0b2c18;--topbar:#071a0e;}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "Source Sans 3",system-ui,sans-serif}
+h1,h2,h3{font-family:Merriweather,Georgia,serif;line-height:1.25;margin:0}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.wrap{max-width:1140px;margin:0 auto;padding:0 20px}
+.top{background:var(--topbar);color:#cfe3d4;font-size:14px}
+.top .wrap{display:flex;justify-content:space-between;gap:12px;padding-top:7px;padding-bottom:7px;flex-wrap:wrap}
+header.nav{background:var(--surface);border-bottom:3px solid var(--green);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:10px;padding-bottom:10px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:46px;height:46px;border-radius:50%;background:var(--green);display:grid;place-items:center;flex:none}
+.brand b{display:block;font-family:Merriweather,serif;font-size:15px;line-height:1.2}
+.brand span{font-size:13px;color:var(--muted)}
+nav ul{display:flex;gap:2px;list-style:none;margin:0;padding:0}
+nav a{display:block;padding:8px 12px;border-radius:6px;font-weight:600;font-size:15px}
+nav a:hover{background:var(--bg);color:var(--green)}
+.menu-btn{display:none;background:none;border:1px solid var(--line);border-radius:6px;padding:8px 12px;color:var(--ink);font:inherit;font-weight:600}
+.hero{background:linear-gradient(120deg,var(--green-d),var(--green));color:#fff;position:relative;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center;padding-top:56px;padding-bottom:56px}
+.hero h1{font-size:clamp(28px,4.2vw,44px);font-weight:900}
+.hero p{max-width:52ch;color:#d9ecdd;margin:16px 0 24px;font-size:18px}
+.btn{display:inline-block;padding:11px 20px;border-radius:6px;font-weight:700;border:2px solid transparent;cursor:pointer;font:inherit;font-weight:700}
+.btn.sun{background:var(--sun);color:#2b2200}
+.btn.ghost{border-color:#ffffff88;color:#fff;margin-left:8px}
+.aqi{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:22px}
+.aqi h3{font-size:16px;font-family:"Source Sans 3",sans-serif;font-weight:700;color:#d9ecdd}
+.aqi .big{font-size:56px;font-weight:700;line-height:1.1;margin:6px 0}
+.aqi .tag{display:inline-block;background:var(--lime);color:#13310a;border-radius:20px;padding:2px 12px;font-weight:700;font-size:14px}
+.aqi dl{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 0}
+.aqi dt{font-size:13px;color:#bcd9c3}.aqi dd{margin:0;font-weight:700}
+.ticker{background:var(--sun);color:#2b2200;font-weight:600}
+.ticker .wrap{padding-top:8px;padding-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+section{padding:52px 0}
+.sec-h{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px;gap:12px}
+.sec-h h2{font-size:26px;border-left:6px solid var(--lime);padding-left:14px}
+.sec-h a{color:var(--green);font-weight:700}
+.svc{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.svc a{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px 18px;display:block}
+.svc a:hover{border-color:var(--green);background:var(--bg)}
+.svc svg{width:34px;height:34px;stroke:var(--green);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.svc h3{font-size:16px;margin:12px 0 4px}
+.svc p{margin:0;font-size:14px;color:var(--muted)}
+.news{display:grid;grid-template-columns:1.4fr 1fr;gap:24px}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.feat .img{height:230px;background:linear-gradient(135deg,#2f8f52,#8cc63f);display:grid;place-items:center}
+.feat .body{padding:20px}
+.feat h3{font-size:22px;margin:6px 0 8px}
+.meta{font-size:13px;color:var(--muted)}
+.list{display:grid;gap:12px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-left:5px solid var(--green)}
+.item h3{font-size:16px;font-family:"Source Sans 3",sans-serif;font-weight:700;margin-top:2px}
+.item:hover{border-left-color:var(--sun)}
+.band{background:var(--green-d);color:#fff}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center}
+.stats b{display:block;font-family:Merriweather,serif;font-size:34px;color:var(--lime)}
+.stats span{color:#cfe3d4;font-size:15px}
+.about{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
+.about p{color:var(--muted);margin:12px 0}
+.vis{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px}
+.vis ul{margin:8px 0 0;padding-left:20px;color:var(--muted)}
+.docs{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.doc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;gap:12px;align-items:center}
+.doc i{font-style:normal;background:var(--bg);color:var(--green);font-weight:700;border-radius:6px;padding:8px 10px;font-size:13px}
+.doc b{font-size:15px}
+.contact{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.contact form{display:grid;gap:12px}
+input,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit}
+textarea{min-height:110px;resize:vertical}
+.ok{color:var(--green);font-weight:700;min-height:1.5em}
+footer{background:var(--topbar);color:#b5cfbc;padding:32px 0 24px;font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer b{color:#fff}
+.poll{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.poll div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
+.poll b{display:block;font-size:26px;font-family:Merriweather,serif;color:var(--green)}
+.poll span{font-size:13px;color:var(--muted)}
+.chart{display:flex;align-items:flex-end;gap:3px;height:140px;margin:14px 0 6px}
+.chart i{flex:1;min-width:4px;border-radius:3px 3px 0 0}
+@media (max-width:900px){.poll{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:500px){.poll{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:900px){
+  .hero .wrap,.news,.about,.contact{grid-template-columns:1fr}
+  .svc,.stats{grid-template-columns:1fr 1fr}.docs{grid-template-columns:1fr}
+  .menu-btn{display:block}
+  nav{display:none;position:absolute;left:0;right:0;top:100%;background:var(--surface);border-bottom:3px solid var(--green)}
+  nav.open{display:block}nav ul{flex-direction:column;padding:8px 20px}
+  .btn.ghost{margin:10px 0 0}
+}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap"><span>Pemerintah Kabupaten Indramayu</span><span>Senin–Jumat, 07.30–16.00 WIB</span></div></div>
+
+<header class="nav"><div class="wrap">
+  <a class="brand" href="#">
+    <span class="logo" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10z"/><path d="M2 21c0-3 1.9-5.5 6-7"/></svg></span>
+    <span><b>Dinas Lingkungan Hidup</b><span>Kabupaten Indramayu</span></span>
+  </a>
+  <button class="menu-btn" id="mb" aria-expanded="false" aria-controls="nv">Menu</button>
+  <nav id="nv" aria-label="Utama"><ul>
+    <li><a href="#">Beranda</a></li><li><a href="#profil">Profil</a></li><li><a href="#udara">Udara</a></li><li><a href="#layanan">Layanan</a></li>
+    <li><a href="#berita">Berita</a></li><li><a href="#unduhan">Unduhan</a></li><li><a href="#kontak">Kontak</a></li>
+  </ul></nav>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <div>
+    <h1>Indramayu bersih, hijau, dan lestari</h1>
+    <p>Layanan perizinan lingkungan, pengaduan, pengelolaan sampah, dan informasi kualitas lingkungan hidup untuk warga Kabupaten Indramayu.</p>
+    <a class="btn sun" href="#layanan">Lihat layanan</a><a class="btn ghost" href="#kontak">Sampaikan pengaduan</a>
+  </div>
+  <aside class="aqi" aria-label="Kualitas udara Indramayu">
+    <h3>Kualitas udara Kota Indramayu (langsung)</h3>
+    <div class="big" id="aqi">–</div><span class="tag" id="cat">Memuat…</span>
+    <dl><div><dt>PM2.5</dt><dd id="pm25">–</dd></div><div><dt>PM10</dt><dd id="pm10">–</dd></div>
+    <div><dt>Suhu</dt><dd id="tmp">–</dd></div><div><dt>Kelembapan</dt><dd id="hum">–</dd></div></dl>
+    <div class="meta" id="upd" style="color:#bcd9c3;margin-top:14px">Memuat data…</div>
+    <button class="btn sun" id="rf" type="button" style="margin-top:12px">Perbarui sekarang</button>
+  </aside>
+</div></div>
+<div class="ticker"><div class="wrap">Pengumuman: Pendaftaran Adipura tingkat kecamatan dibuka sampai akhir bulan. Hubungi bidang tata lingkungan untuk informasi.</div></div>
+
+<section id="udara"><div class="wrap">
+  <div class="sec-h"><h2>Pemantauan kualitas udara</h2><span class="meta" id="st">Memuat data…</span></div>
+  <div class="poll" id="poll"></div>
+  <div class="vis" style="margin-top:20px"><h3>Indeks 24 jam terakhir</h3>
+    <div class="chart" id="chart" role="img" aria-label="Grafik indeks kualitas udara 24 jam terakhir"></div>
+    <div class="meta" style="display:flex;justify-content:space-between"><span>24 jam lalu</span><span>Sekarang</span></div></div>
+  <div class="vis" style="margin-top:20px"><h3>Saran kesehatan</h3><p id="advice" style="color:var(--muted);margin:8px 0 0">–</p></div>
+  <p class="meta" style="margin-top:16px">Sumber: Open-Meteo Air Quality (model CAMS) untuk koordinat Kota Indramayu, diperbarui otomatis tiap 5 menit. Nilai berupa estimasi model per jam, bukan pembacaan alat ukur di lokasi. Skala US AQI.</p>
+</div></section>
+
+<section id="layanan"><div class="wrap">
+  <div class="sec-h"><h2>Layanan</h2></div>
+  <div class="svc">
+    <a href="#kontak"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg><h3>Perizinan lingkungan</h3><p>Persetujuan lingkungan, UKL-UPL, dan SPPL.</p></a>
+    <a href="#kontak"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><h3>Pengaduan masyarakat</h3><p>Laporkan pencemaran atau kerusakan lingkungan.</p></a>
+    <a href="#berita"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg><h3>Pengelolaan sampah</h3><p>Jadwal angkut, TPS3R, dan bank sampah.</p></a>
+    <a href="#unduhan"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><h3>Data lingkungan</h3><p>Kualitas air, udara, dan laporan tahunan.</p></a>
+  </div>
+</div></section>
+
+<section id="berita" style="padding-top:0"><div class="wrap">
+  <div class="sec-h"><h2>Berita terbaru</h2><a href="#">Semua berita</a></div>
+  <div class="news">
+    <article class="feat">
+      <div class="img" aria-hidden="true"><svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 8 4 3 4c0 5 3 8 9 8zM12 14c0-4 3-7 9-7 0 5-3 8-9 8"/></svg></div>
+      <div class="body"><div class="meta">Tata Lingkungan · 20 Oktober 2026</div>
+      <h3>Penanaman 5.000 mangrove di pesisir Indramayu</h3>
+      <p>Bersama kelompok masyarakat dan pelajar, DLH menanam mangrove untuk menahan abrasi dan memulihkan ekosistem pantai utara.</p></div>
+    </article>
+    <div class="list">
+      <a class="item" href="#"><div class="meta">15 Oktober 2026</div><h3>Sosialisasi pemilahan sampah rumah tangga di 10 kecamatan</h3></a>
+      <a class="item" href="#"><div class="meta">8 Oktober 2026</div><h3>Pengujian kualitas air sungai rutin semester II</h3></a>
+      <a class="item" href="#"><div class="meta">1 Oktober 2026</div><h3>Bank sampah unit terbaik menerima penghargaan</h3></a>
+    </div>
+  </div>
+</div></section>
+
+<section class="band"><div class="wrap stats">
+  <div><b data-n="31">0</b><span>Kecamatan terlayani</span></div>
+  <div><b data-n="120">0</b><span>Bank sampah aktif</span></div>
+  <div><b data-n="5000">0</b><span>Mangrove ditanam</span></div>
+  <div><b data-n="86">0</b><span>Izin lingkungan terbit</span></div>
+</div></section>
+
+<section id="profil"><div class="wrap about">
+  <div><div class="sec-h"><h2>Profil dinas</h2></div>
+  <p>Dinas Lingkungan Hidup melaksanakan urusan pemerintahan di bidang lingkungan hidup: perencanaan, pengendalian pencemaran, pengelolaan persampahan, dan pengawasan.</p>
+  <p>Isi bagian ini dengan sambutan kepala dinas, struktur organisasi, tugas pokok, dan fungsi sesuai data resmi.</p></div>
+  <div class="vis"><h3>Visi</h3><p style="color:var(--muted)">Terwujudnya lingkungan Indramayu yang bersih, sehat, dan lestari.</p>
+  <h3 style="margin-top:16px">Misi</h3><ul><li>Mengendalikan pencemaran dan kerusakan lingkungan</li><li>Meningkatkan pengelolaan sampah berbasis masyarakat</li><li>Memperkuat layanan perizinan yang cepat dan transparan</li></ul></div>
+</div></section>
+
+<section id="unduhan" style="padding-top:0"><div class="wrap">
+  <div class="sec-h"><h2>Unduhan dokumen</h2></div>
+  <div class="docs">
+    <a class="doc" href="#"><i>PDF</i><b>Formulir SPPL</b></a>
+    <a class="doc" href="#"><i>PDF</i><b>Laporan Kinerja (LKjIP)</b></a>
+    <a class="doc" href="#"><i>PDF</i><b>Standar pelayanan</b></a>
+  </div>
+</div></section>
+
+<section id="kontak" style="padding-top:0"><div class="wrap contact">
+  <div><div class="sec-h"><h2>Kontak &amp; pengaduan</h2></div>
+  <p style="color:var(--muted)">Alamat: Jl. (isi alamat kantor), Indramayu, Jawa Barat<br>Telepon: (isi nomor)<br>Email: (isi email resmi)</p></div>
+  <form id="f">
+    <input name="n" placeholder="Nama lengkap" required aria-label="Nama lengkap">
+    <input name="e" type="email" placeholder="Email" required aria-label="Email">
+    <textarea name="m" placeholder="Tulis pengaduan atau pertanyaan Anda" required aria-label="Pesan"></textarea>
+    <button class="btn sun" type="submit">Kirim pengaduan</button>
+    <div class="ok" id="ok" role="status"></div>
+  </form>
+</div></section>
+
+<footer><div class="wrap">
+  <div><b>Dinas Lingkungan Hidup Kabupaten Indramayu</b><br>Pemerintah Kabupaten Indramayu</div>
+  <div>© 2026 DLH Indramayu. Situs contoh, bukan situs resmi.</div>
+</div></footer>
+
+<script>
+document.getElementById('mb').onclick=function(){var n=document.getElementById('nv');var o=n.classList.toggle('open');this.setAttribute('aria-expanded',o)};
+var LAT=-6.3264,LON=108.32;
+var CATS=[[50,'Baik','#8cc63f','#13310a','Udara bersih. Aman untuk beraktivitas di luar ruangan.'],
+[100,'Sedang','#f2b705','#2b2200','Kualitas dapat diterima. Kelompok yang sangat sensitif sebaiknya mengurangi aktivitas berat di luar.'],
+[150,'Tidak sehat bagi kelompok sensitif','#f28c28','#2b1500','Anak-anak, lansia, dan penderita asma atau penyakit jantung sebaiknya membatasi aktivitas di luar.'],
+[200,'Tidak sehat','#e03c31','#fff','Kurangi aktivitas berat di luar ruangan dan gunakan masker bila perlu.'],
+[300,'Sangat tidak sehat','#8f3f97','#fff','Hindari aktivitas di luar ruangan. Gunakan masker dan tutup jendela.'],
+[1e9,'Berbahaya','#7e0023','#fff','Tetap di dalam ruangan dan ikuti arahan pemerintah daerah.']];
+function cat(v){for(var i=0;i<CATS.length;i++)if(v<=CATS[i][0])return CATS[i]}
+function $(i){return document.getElementById(i)}
+function r(v){return v==null?'–':Math.round(v)}
+async function load(){
+  $('upd').textContent=$('st').textContent='Memuat data…';
+  try{
+    var q='latitude='+LAT+'&longitude='+LON+'&timezone=Asia%2FBangkok';
+    var rs=await Promise.all([
+      fetch('https://air-quality-api.open-meteo.com/v1/air-quality?'+q+'&current=us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulfur_dioxide,ozone&hourly=us_aqi&past_days=1&forecast_days=1'),
+      fetch('https://api.open-meteo.com/v1/forecast?'+q+'&current=temperature_2m,relative_humidity_2m')]);
+    if(!rs[0].ok)throw new Error('air');
+    var a=await rs[0].json(), w=rs[1].ok?await rs[1].json():null, c=a.current, k=cat(c.us_aqi);
+    $('aqi').textContent=r(c.us_aqi);
+    var t=$('cat');t.textContent=k[1];t.style.background=k[2];t.style.color=k[3];
+    $('pm25').textContent=r(c.pm2_5)+' µg/m³';$('pm10').textContent=r(c.pm10)+' µg/m³';
+    $('tmp').textContent=w?r(w.current.temperature_2m)+' °C':'–';
+    $('hum').textContent=w?r(w.current.relative_humidity_2m)+'%':'–';
+    $('advice').textContent=k[4];
+    var P=[['PM2.5',c.pm2_5,'µg/m³'],['PM10',c.pm10,'µg/m³'],['NO₂',c.nitrogen_dioxide,'µg/m³'],['SO₂',c.sulfur_dioxide,'µg/m³'],['O₃',c.ozone,'µg/m³'],['CO',c.carbon_monoxide,'µg/m³']];
+    $('poll').innerHTML=P.map(function(x){return '<div><span>'+x[0]+'</span><b>'+r(x[1])+'</b><span>'+x[2]+'</span></div>'}).join('');
+    var h=a.hourly,i=h.time.indexOf(c.time.slice(0,13)+':00');if(i<0)i=h.time.length-1;
+    var s0=Math.max(0,i-23),vals=h.us_aqi.slice(s0,i+1),times=h.time.slice(s0,i+1);
+    var mx=Math.max(100,Math.max.apply(null,vals.filter(function(x){return x!=null})));
+    $('chart').innerHTML=vals.map(function(v,j){return '<i style="height:'+(v==null?2:Math.max(3,v/mx*100))+'%;background:'+cat(v||0)[2]+'" title="'+times[j].slice(11,16)+' WIB: AQI '+r(v)+'"></i>'}).join('');
+    $('upd').textContent=$('st').textContent='Diperbarui '+c.time.slice(11,16)+' WIB';
+  }catch(e){
+    $('upd').textContent=$('st').textContent='Gagal mengambil data. Periksa koneksi internet lalu coba lagi.';
+    $('cat').textContent='Tidak tersedia';
+  }
+}
+$('rf').onclick=load;setInterval(load,300000);load();
+document.getElementById('f').onsubmit=function(e){e.preventDefault();document.getElementById('ok').textContent='Pengaduan terkirim. Terima kasih.';this.reset()};
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+document.querySelectorAll('[data-n]').forEach(function(el){var t=+el.dataset.n;if(reduce){el.textContent=t.toLocaleString('id-ID');return}
+var s=null;(function f(ts){s=s||ts;var p=Math.min((ts-s)/1200,1);el.textContent=Math.round(t*p).toLocaleString('id-ID');if(p<1)requestAnimationFrame(f)})(performance.now())});
+</script>
+</body>
+</html>
