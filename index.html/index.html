@@ -235,7 +235,7 @@ async function load(){
     var rs=await Promise.all([
       fetch('https://air-quality-api.open-meteo.com/v1/air-quality?'+q+'&current=us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulfur_dioxide,ozone&hourly=us_aqi&past_days=1&forecast_days=1'),
       fetch('https://api.open-meteo.com/v1/forecast?'+q+'&current=temperature_2m,relative_humidity_2m')]);
-    if(!rs[0].ok)throw new Error('air');
+    if(!rs[0].ok){var j={};try{j=await rs[0].json()}catch(_){}throw new Error('server membalas '+rs[0].status+(j.reason?': '+j.reason:''))}
     var a=await rs[0].json(), w=rs[1].ok?await rs[1].json():null, c=a.current, k=cat(c.us_aqi);
     $('aqi').textContent=r(c.us_aqi);
     var t=$('cat');t.textContent=k[1];t.style.background=k[2];t.style.color=k[3];
@@ -251,7 +251,7 @@ async function load(){
     $('chart').innerHTML=vals.map(function(v,j){return '<i style="height:'+(v==null?2:Math.max(3,v/mx*100))+'%;background:'+cat(v||0)[2]+'" title="'+times[j].slice(11,16)+' WIB: AQI '+r(v)+'"></i>'}).join('');
     $('upd').textContent=$('st').textContent='Diperbarui '+c.time.slice(11,16)+' WIB';
   }catch(e){
-    $('upd').textContent=$('st').textContent='Gagal mengambil data. Periksa koneksi internet lalu coba lagi.';
+    var m=(e&&e.message)||String(e);if(/fetch|network/i.test(m))m='permintaan ke Open-Meteo diblokir atau tidak ada koneksi';$('upd').textContent=$('st').textContent='Gagal mengambil data ('+m+'). Coba lagi nanti.';console.error(e);
     $('cat').textContent='Tidak tersedia';
   }
 }
