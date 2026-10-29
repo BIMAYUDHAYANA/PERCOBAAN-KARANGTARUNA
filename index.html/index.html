@@ -233,7 +233,7 @@ async function load(){
   try{
     var q='latitude='+LAT+'&longitude='+LON+'&timezone=Asia%2FBangkok';
     var rs=await Promise.all([
-      fetch('https://air-quality-api.open-meteo.com/v1/air-quality?'+q+'&current=us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulfur_dioxide,ozone&hourly=us_aqi&past_days=1&forecast_days=1'),
+      fetch('https://air-quality-api.open-meteo.com/v1/air-quality?'+q+'&current=us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone&hourly=us_aqi&past_days=1&forecast_days=1'),
       fetch('https://api.open-meteo.com/v1/forecast?'+q+'&current=temperature_2m,relative_humidity_2m')]);
     if(!rs[0].ok){var j={};try{j=await rs[0].json()}catch(_){}throw new Error('server membalas '+rs[0].status+(j.reason?': '+j.reason:''))}
     var a=await rs[0].json(), w=rs[1].ok?await rs[1].json():null, c=a.current, k=cat(c.us_aqi);
@@ -243,7 +243,7 @@ async function load(){
     $('tmp').textContent=w?r(w.current.temperature_2m)+' °C':'–';
     $('hum').textContent=w?r(w.current.relative_humidity_2m)+'%':'–';
     $('advice').textContent=k[4];
-    var P=[['PM2.5',c.pm2_5,'µg/m³'],['PM10',c.pm10,'µg/m³'],['NO₂',c.nitrogen_dioxide,'µg/m³'],['SO₂',c.sulfur_dioxide,'µg/m³'],['O₃',c.ozone,'µg/m³'],['CO',c.carbon_monoxide,'µg/m³']];
+    var P=[['PM2.5',c.pm2_5,'µg/m³'],['PM10',c.pm10,'µg/m³'],['NO₂',c.nitrogen_dioxide,'µg/m³'],['SO₂',c.sulphur_dioxide,'µg/m³'],['O₃',c.ozone,'µg/m³'],['CO',c.carbon_monoxide,'µg/m³']];
     $('poll').innerHTML=P.map(function(x){return '<div><span>'+x[0]+'</span><b>'+r(x[1])+'</b><span>'+x[2]+'</span></div>'}).join('');
     var h=a.hourly,i=h.time.indexOf(c.time.slice(0,13)+':00');if(i<0)i=h.time.length-1;
     var s0=Math.max(0,i-23),vals=h.us_aqi.slice(s0,i+1),times=h.time.slice(s0,i+1);
