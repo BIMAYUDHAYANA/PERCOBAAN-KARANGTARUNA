@@ -97,6 +97,20 @@ footer b{color:#fff}
 .vm-title{text-align:center;color:#55a630;font:700 clamp(36px,6vw,56px)/1.2 "Source Sans 3",system-ui,sans-serif;margin:0 0 32px}
 .vm{max-width:900px;margin:0 auto;color:var(--muted)}
 .vm p{margin:0 0 24px;line-height:1.75}
+.dd{position:relative}
+.dd .sub{display:none;position:absolute;left:0;top:100%;min-width:230px;flex-direction:column;gap:0;padding:6px;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--green);border-radius:0 0 8px 8px;box-shadow:0 8px 20px rgba(0,0,0,.15)}
+.dd:hover .sub,.dd:focus-within .sub{display:flex}
+.org{display:grid;gap:36px;justify-items:center}
+.org-row{display:flex;flex-wrap:wrap;justify-content:center;gap:24px}
+.pj{margin:0;width:200px;text-align:center}
+.pj img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.pj figcaption{margin-top:10px}
+.pj b{display:block;color:var(--green);font-size:16px}
+.pj span{color:var(--muted);font-size:15px}
+.info img{display:block;max-width:100%;margin:0 auto;border-radius:10px}
+.info p{text-align:center;color:var(--muted);margin:0}
+@media (max-width:500px){.pj{width:150px}}
+@media (max-width:900px){.dd .sub{display:flex;position:static;box-shadow:none;border:0;border-left:3px solid var(--line);border-radius:0;margin:0 0 6px 12px;padding:0 0 0 6px}}
 @media (max-width:900px){.poll{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:500px){.poll{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:900px){
@@ -119,7 +133,9 @@ footer b{color:#fff}
   </a>
   <button class="menu-btn" id="mb" aria-expanded="false" aria-controls="nv">Menu</button>
   <nav id="nv" aria-label="Utama"><ul>
-    <li><a href="#">Beranda</a></li><li><a href="#profil">Profil</a></li><li><a href="#udara">Udara</a></li><li><a href="#layanan">Layanan</a></li>
+    <li><a href="#">Beranda</a></li><li class="dd"><a href="#visi-misi" aria-haspopup="true">Profil &#9662;</a><ul class="sub">
+      <li><a href="#visi-misi">Visi Misi</a></li><li><a href="#tugas-fungsi">Tugas Pokok dan Fungsi</a></li>
+      <li><a href="#struktur">Struktur Organisasi</a></li><li><a href="#infografis">Infografis</a></li></ul></li><li><a href="#udara">Udara</a></li><li><a href="#layanan">Layanan</a></li>
     <li><a href="#berita">Berita</a></li><li><a href="#unduhan">Unduhan</a></li><li><a href="#kontak">Kontak</a></li>
   </ul></nav>
 </div></header>
@@ -185,7 +201,7 @@ footer b{color:#fff}
   <div><b data-n="86">0</b><span>Izin lingkungan terbit</span></div>
 </div></section>
 
-<section id="profil"><div class="wrap">
+<section id="visi-misi"><div class="wrap">
   <h2 class="vm-title">Visi Misi</h2>
   <div class="vm">
     <p>Visi Dinas Lingkungan Hidup Kabupaten Indramayu :</p>
@@ -196,6 +212,25 @@ footer b{color:#fff}
     <p>Program :<br>Indramayu Hijau<br>Pengelolaan Sampah</p>
     <p>Arah Kebijakan :<br>Pengendalian pencemaran dan perusakan lingkungan hidup serta dampak perubahan iklim skala kabupaten.<br>Pengembangan kawasan terbuka hijau, hutan kota, dan konservasi taman keanekaragaman hayati skala kabupaten.<br>Edukasi Penyadaran pola membuang sampah dan peningkatan kegiatan pemilahan sampah dan kerja bakti di lingkungan masyarakat.</p>
   </div>
+</div></section>
+
+<section id="tugas-fungsi" style="padding-top:0"><div class="wrap">
+  <h2 class="vm-title">Tugas Pokok dan Fungsi</h2>
+  <div class="vm">
+    <p>Peraturan Bupati Indramayu Nomor 28 Tahun 2022 tentang Organisasi dan Tata Kerja Dinas Lingkungan Hidup Kabupaten Indramayu:</p>
+    <p>Dinas Lingkungan Hidup Kabupaten Indramayu mempunyai <b>tugas pokok</b> membantu Bupati dalam melaksanakan urusan pemerintahan yang menjadi kewenangan Daerah dan Tugas Pembantuan yang diberikan kepada Daerah di bidang lingkungan hidup.</p>
+    <p>Sedangkan untuk menyelenggarakan tugas tersebut, DLH Kabupaten Indramayu mempunyai <b>fungsi</b> sebagai berikut:<br>a. perumusan kebijakan teknis di bidang lingkungan hidup;<br>b. pelaksanaan kebijakan di bidang lingkungan hidup;<br>c. pelaksanaan evaluasi dan pelaporan di bidang lingkungan hidup;<br>d. pelaksanaan administrasi Dinas di bidang lingkungan hidup;<br>e. pelaksanaan pengelolaan UPTD;<br>f. pelaksanaan fungsi lain yang diberikan oleh Bupati terkait dengan tugas dan fungsinya.</p>
+  </div>
+</div></section>
+
+<section id="struktur" style="padding-top:0"><div class="wrap">
+  <h2 class="vm-title">Struktur Organisasi</h2>
+  <div class="org" id="org"></div>
+</div></section>
+
+<section id="infografis" style="padding-top:0"><div class="wrap">
+  <h2 class="vm-title">Infografis</h2>
+  <div class="info"><img id="ig" src="foto/infografis.jpg" alt="Infografis Dinas Lingkungan Hidup Kabupaten Indramayu"><p id="ign">Infografis belum tersedia.</p></div>
 </div></section>
 
 <section id="unduhan" style="padding-top:0"><div class="wrap">
@@ -263,6 +298,20 @@ async function load(){
     $('cat').textContent='Tidak tersedia';
   }
 }
+/* STRUKTUR ORGANISASI: ubah jabatan (j), nama (n), dan file foto (f). Simpan foto di folder foto/ */
+var ORG=[
+ [{j:'Kepala Dinas',n:'Nama Kepala Dinas',f:'foto/kepala-dinas.jpg'}],
+ [{j:'Sekretaris',n:'Nama Sekretaris',f:'foto/sekretaris.jpg'}],
+ [{j:'Kepala Bidang 1',n:'Nama Pejabat',f:'foto/kabid-1.jpg'},{j:'Kepala Bidang 2',n:'Nama Pejabat',f:'foto/kabid-2.jpg'},{j:'Kepala Bidang 3',n:'Nama Pejabat',f:'foto/kabid-3.jpg'}],
+ [{j:'Kepala UPTD',n:'Nama Pejabat',f:'foto/kepala-uptd.jpg'}]];
+var PH='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><rect width="300" height="400" fill="#dfeadf"/><circle cx="150" cy="150" r="58" fill="#9db9a3"/><path d="M45 400c0-85 48-130 105-130s105 45 105 130z" fill="#9db9a3"/></svg>');
+(function(){var box=$('org');ORG.forEach(function(row){var d=document.createElement('div');d.className='org-row';
+ row.forEach(function(p){var f=document.createElement('figure');f.className='pj';
+  var im=document.createElement('img');im.alt=p.j+' '+p.n;im.loading='lazy';im.src=p.f;im.onerror=function(){this.onerror=null;this.src=PH};
+  var c=document.createElement('figcaption'),b=document.createElement('b'),n=document.createElement('span');
+  b.textContent=p.j;n.textContent=p.n;c.appendChild(b);c.appendChild(n);f.appendChild(im);f.appendChild(c);d.appendChild(f)});
+ box.appendChild(d)});
+ var ig=$('ig');ig.onload=function(){$('ign').style.display='none'};ig.onerror=function(){ig.style.display='none'};})();
 $('rf').onclick=load;setInterval(load,300000);load();
 document.getElementById('f').onsubmit=function(e){e.preventDefault();document.getElementById('ok').textContent='Pengaduan terkirim. Terima kasih.';this.reset()};
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
